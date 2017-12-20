@@ -22,7 +22,7 @@ class TSerializableMap
   public:
     TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
       const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-      int indent);
+      const std::vector<std::string>& ignoredNamespaces, int indent);
 
     bool Generate();
 
@@ -77,6 +77,9 @@ class TSerializableMap
   
     //input file names
     const std::vector<path>& Inputs; 
+  
+    //ignored namespaces
+    const std::vector<std::string>& IgnoredNamespaces;
   
     //output file names
     path                ParsedHeaderTypeIdsFileName;

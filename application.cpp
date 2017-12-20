@@ -627,8 +627,13 @@ bool AApplication::ParseXML()
 
 bool AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
   {
+  std::vector<std::string> ignoredNamespaces;
+
+  if (args.count("ignore-namespace"))
+    ignoredNamespaces = args["ignore-namespace"].as<std::vector<std::string>>();
+
   TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles,
-    WorkingDir, OutputFilePrefix, args["indent"].as<int>());
+    WorkingDir, OutputFilePrefix, ignoredNamespaces, args["indent"].as<int>());
 
   return serializableMap.Generate();
   }

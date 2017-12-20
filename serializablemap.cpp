@@ -13,9 +13,10 @@
 
 TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
   const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-  int indent)
+  const std::vector<std::string>& ignoredNamespaces, int indent)
   : Classes(classes), Enums(enums), Logger(logger), CodeGenerator(logger, Indent), Inputs(inputs),
-    Indent(indent, ' '), Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
+    IgnoredNamespaces(ignoredNamespaces), Indent(indent, ' '), Indent2(indent * 2, ' '),
+    Indent3(indent * 3, ' ')
   {
   ParsedHeaderTypeIdsFileName = working_dir / (output_prefix + "_typeids");
   ParsedHeaderTypeIdsFileName.replace_extension(".h");
@@ -137,6 +138,18 @@ void TSerializableMap::WriteOperatorsForEnums()
       LOG_VERBOSE("Enum with non-public access: " << enumName);
       continue;
       }
+
+    for (auto& ignoredNamespace : IgnoredNamespaces)
+      {
+      if (enumName.compare(0, ignoredNamespace.length(), ignoredNamespace) == 0)
+        {
+        _enum = nullptr;
+        break;
+        }
+      }
+
+    if (_enum == nullptr)
+      continue;
 
     const AXmlElement* parent = _enum->GetParent();
 

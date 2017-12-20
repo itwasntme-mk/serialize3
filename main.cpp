@@ -30,8 +30,9 @@ int main(int argc, const char *argv[])
       ("log,l", bpo::value<std::string>(), "Output log file.")
       ("quiet", "Quiet mode.")
       ("verbose", "Verbose mode.")
-      ("indent", bpo::value<int>()->default_value(2))
-      ("input", bpo::value<std::vector<path>>()->required(), "Input file(s)")
+      ("indent", bpo::value<int>()->default_value(2), "Indentation in generated code. Default is 2.")
+      ("ignore-namespace", bpo::value<std::vector<std::string>>(), "Ignore enum types from namespace.")
+      ("input", bpo::value<std::vector<path>>()->required(), "Input file(s).")
       ;
 
     bpo::variables_map vm;
