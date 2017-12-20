@@ -66,8 +66,13 @@ bool TSerializableMap::WriteParsedHeaderInjectedFunctions()
   CodeGenerator.Out << Indent << "#define WRAP(...) __VA_ARGS__" << std::endl;
   CodeGenerator.Out << "#endif" << std::endl;
 
+  CodeGenerator.Out << std::endl;
   WriteOperatorsForEnums();
+
+  CodeGenerator.Out << std::endl;
   WriteFunctionsForClasses();
+
+  CloseNamespaces();
 
   CodeGenerator.Close();
 
@@ -305,6 +310,9 @@ void TSerializableMap::WriteFunctionsForClass(const TClass& _class)
       return;
     }
 
+  OpenNamespaces(_class.GetNamespaceList());
+
+  CurrentClassName = _class.GetFullNameWONamespaces();
   CurrentClassFullName = _class.GetFullName();
   CurrentTypeIdName = GetTypeIdName(_class);
 
@@ -322,7 +330,7 @@ void TSerializableMap::WriteFunctionsForClass(const TClass& _class)
     }
   else
     {
-    LOG_NOTE(CurrentClassFullName << " is object serialized");
+    LOG_NOTE(_class.GetFullName() << " is object serialized");
     }
   }
 
@@ -334,7 +342,7 @@ void TSerializableMap::WriteBuildForSerializerFunction(const TClass& _class)
 
     if (_class.IsTemplate())
       out << "template <> ";
-    out << "void* " << CurrentClassFullName << "::BuildForSerializer()";
+    out << "void* " << CurrentClassName << "::BuildForSerializer()";
 
     if (_class.IsAbstract())
       out << " { return 0; }" << std::endl;
@@ -359,7 +367,7 @@ void TSerializableMap::WriteDumpObjectFunction(const TClass& _class)
 
     if (_class.IsTemplate())
       out << "template <> ";
-    out << "void " << CurrentClassFullName << "::Dump(ASerializeDumper& dumper) const" << std::endl;
+    out << "void " << CurrentClassName << "::Dump(ASerializeDumper& dumper) const" << std::endl;
     out << Indent << "{" << std::endl;
     out << Indent << "DPUSH_INDENT;" << std::endl;
     std::string logMsg("Dump " + CurrentClassFullName);
@@ -391,7 +399,7 @@ void TSerializableMap::WriteLoadObjectFunction(const TClass& _class)
 
     if (_class.IsTemplate())
       out << "template <> ";
-    out << "void " << CurrentClassFullName << "::Load(ASerializeLoader& loader)" << std::endl;
+    out << "void " << CurrentClassName << "::Load(ASerializeLoader& loader)" << std::endl;
     out << Indent << "{" << std::endl;
     out << Indent << "LPUSH_INDENT;" << std::endl;
     std::string logMsg("Load " + CurrentClassFullName);
@@ -422,7 +430,7 @@ void TSerializableMap::WriteTypeIdFunction(const TClass& _class)
   //TYPEID_TYPE ClassName::GetTypeId() const { return ClassName_TYPE_ID; }
   if (_class.IsTemplate())
     out << "template <> ";
-  out << "TTypeId " << CurrentClassFullName << "::GetTypeId() const { return "
+  out << "TTypeId " << CurrentClassName << "::GetTypeId() const { return "
       << CurrentTypeIdName << "; }" << std::endl;
   }
 
@@ -434,7 +442,7 @@ void TSerializableMap::WriteDumpObjectPointerFunction(const TClass& _class)
 
     if (_class.IsTemplate())
       out << "template <> ";
-    out << "void " << CurrentClassFullName << "::DumpPointer(ASerializeDumper& dumper) const" << std::endl;
+    out << "void " << CurrentClassName << "::DumpPointer(ASerializeDumper& dumper) const" << std::endl;
     out << Indent << "{" << std::endl;
     std::string logMsg("Dump " + CurrentClassFullName + " pointer");
     CodeGenerator.AddLogMacro(logMsg.c_str(),"DLOGMSG");
@@ -452,7 +460,7 @@ void TSerializableMap::WriteLoadObjectPointerFunction(const TClass& _class)
 
     if (_class.IsTemplate())
       out << "template <> ";
-    out << "void* " << CurrentClassFullName << "::LoadPointer(ASerializeLoader& loader)" << std::endl;
+    out << "void* " << CurrentClassName << "::LoadPointer(ASerializeLoader& loader)" << std::endl;
     out << Indent << "{" << std::endl;
     std::string logMsg("Load " + CurrentClassFullName + " pointer");
     CodeGenerator.AddLogMacro(logMsg.c_str(), "LLOGMSG");
@@ -619,6 +627,25 @@ std::string TSerializableMap::GetTypeEnumCast(const TEnum& _enum, bool dump)
     }
 
   return std::move(result);
+  }
+
+void TSerializableMap::OpenNamespaces(TNamespaces&& namespaces)
+  {
+  if (CurrentOpenedNamespaces != namespaces)
+    {
+    CloseNamespaces();
+    for (auto& _namespace : namespaces)
+      CodeGenerator.Out << "namespace " << _namespace->GetName() << std::endl << '{' << std::endl;
+    CurrentOpenedNamespaces = std::move(namespaces);
+    }
+  }
+
+void TSerializableMap::CloseNamespaces()
+  {
+  for (auto& _namespace : CurrentOpenedNamespaces)
+    CodeGenerator.Out << "} // namespace " << _namespace->GetName() << std::endl;
+
+  CurrentOpenedNamespaces.clear();
   }
 
 std::string TSerializableMap::GetTypeIdName(const TClass& _class)

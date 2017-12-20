@@ -85,6 +85,20 @@ AXmlElement::AXmlElement(const std::string& name, TTagType tagKind)
   ElemKind = found->second;
   }
 
+TNamespaces AXmlElement::GetNamespaceList() const
+  {
+  TNamespaces result;
+
+  if (Parent)
+    {
+    result = Parent->GetNamespaceList();
+    if (Parent->GetElemKind() == TypeNamespace)
+      result.push_back(static_cast<const TNamespace*>(Parent));
+    }
+
+  return std::move(result);
+  }
+
 void TClass::SetSerializeMethod(TMethodType serializeType)
   {
   assert(SerializeMethod == TYPE_NOT_MARKED && "SetSerializeType called more than once!");

@@ -10,6 +10,8 @@
 #include <cassert>
 
 class TXmlElementsFactory;
+class TNamespace;
+typedef std::vector<const TNamespace*> TNamespaces;
 
 class AXmlElement
   {
@@ -46,6 +48,15 @@ class AXmlElement
         return GetName();
       return Parent->GetFullName() + "::" + GetName();
       }
+
+    std::string GetFullNameWONamespaces() const
+      {
+      if (Parent == nullptr || Parent->GetElemKind() == TypeNamespace)
+        return GetName();
+      return Parent->GetFullNameWONamespaces() + "::" + GetName();
+      }
+
+    TNamespaces GetNamespaceList() const;
 
     bool IsPublicAccess() const { return PublicAccess != 0; }
 

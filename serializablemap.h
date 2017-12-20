@@ -64,6 +64,9 @@ class TSerializableMap
 
     std::string GetTypeEnumCast(const TEnum& _enum, bool dump);
 
+    void OpenNamespaces(TNamespaces&& namespaces);
+    void CloseNamespaces();
+
     static std::string GetTypeIdName(const TClass& _class);
 
   private:
@@ -85,9 +88,11 @@ class TSerializableMap
     path                ParsedHeaderTypeIdsFileName;
     path                InjectedFunctionsFileName;
 
+    TNamespaces         CurrentOpenedNamespaces;
     std::string         Indent;
     std::string         Indent2;
     std::string         Indent3;
+    std::string         CurrentClassName;
     std::string         CurrentClassFullName;
     std::string         CurrentTypeIdName;
     TClassSet           GeneratedNamedStructs;
