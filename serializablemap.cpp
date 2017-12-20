@@ -212,8 +212,12 @@ void TSerializableMap::WriteOperatorsForStruct(const TClass& _class)
 
 void TSerializableMap::WriteFunctionsForClasses()
   {
+  // first generate all BuildForSerializer
   for (auto _class : Classes)
-    WriteFunctionsForClass(*_class);
+    WriteBuildForSerializerMethods(*_class);
+
+  for (auto _class : Classes)
+    WriteMethodsForClass(*_class);
   }
 
 bool TSerializableMap::AnalyzeMembers(const TClass& _class)
@@ -302,7 +306,21 @@ bool TSerializableMap::AnalyzeMembers(const TClass& _class)
   return errors == Errors;
   }
 
-void TSerializableMap::WriteFunctionsForClass(const TClass& _class)
+void TSerializableMap::WriteBuildForSerializerMethods(const TClass& _class)
+  {
+  if (_class.IsPointerSerializable())
+    {
+    OpenNamespaces(_class.GetNamespaceList());
+
+    CurrentClassName = _class.GetFullNameWONamespaces();
+    CurrentClassFullName = _class.GetFullName();
+    CurrentTypeIdName = GetTypeIdName(_class);
+
+    WriteBuildForSerializerFunction(_class);
+    }
+  }
+
+void TSerializableMap::WriteMethodsForClass(const TClass& _class)
   {
   if (_class.IsDumpNeeded() || _class.IsLoadNeeded())
     {
@@ -315,9 +333,6 @@ void TSerializableMap::WriteFunctionsForClass(const TClass& _class)
   CurrentClassName = _class.GetFullNameWONamespaces();
   CurrentClassFullName = _class.GetFullName();
   CurrentTypeIdName = GetTypeIdName(_class);
-
-  if (_class.IsPointerSerializable())
-    WriteBuildForSerializerFunction(_class);
 
   WriteDumpObjectFunction(_class);
   WriteLoadObjectFunction(_class);

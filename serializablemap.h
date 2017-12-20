@@ -42,7 +42,8 @@ class TSerializableMap
         Note: if any member is of named struct type, operators '&' will be generated.
     */
     bool AnalyzeMembers(const TClass& _class);
-    void WriteFunctionsForClass(const TClass& _class);
+    void WriteBuildForSerializerMethods(const TClass& _class);
+    void WriteMethodsForClass(const TClass& _class);
     void WriteBuildForSerializerFunction(const TClass& _class);
     void WriteDumpObjectFunction(const TClass& _class);
     void WriteLoadObjectFunction(const TClass& _class);
