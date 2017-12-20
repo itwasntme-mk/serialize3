@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Public Header Files">
+      <UniqueIdentifier>{2a8e0a50-d28a-4815-9e5e-ab0c9e0389eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Header Files\Client Code">
+      <UniqueIdentifier>{acb1ce49-b76c-4196-9bd5-6e4433aa5f41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Header Files\Generated Code">
+      <UniqueIdentifier>{5b7a15aa-ddf7-4106-a97e-e97861e132c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Header Files\Storage">
+      <UniqueIdentifier>{295b3df7-c85a-4f1b-9b78-b38af82db685}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{fbe10a03-15fb-41f3-9965-8832c209808e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="apps_factory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml_element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\client_code\serialize_macros.h">
+      <Filter>Public Header Files\Client Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\client_code\serialize_ptrwrapper.h">
+      <Filter>Public Header Files\Client Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\client_code\serialize_utils.h">
+      <Filter>Public Header Files\Client Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\gen_code\dumpertemplates.h">
+      <Filter>Public Header Files\Generated Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\gen_code\loadertemplates.h">
+      <Filter>Public Header Files\Generated Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\gen_code\serializable_std_type_includes.h">
+      <Filter>Public Header Files\Generated Code</Filter>
+    </ClInclude>
+    <ClInclude Include="h\storage\primitivedumper.h">
+      <Filter>Public Header Files\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="h\storage\primitiveloader.h">
+      <Filter>Public Header Files\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="h\storage\serializedumper.h">
+      <Filter>Public Header Files\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="h\storage\serializeloader.h">
+      <Filter>Public Header Files\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml_reader_boost_property_tree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="str_less.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="serializablemap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="h\gen_code\serializable_boost_cntrs_includes.h">
+      <Filter>Public Header Files\Generated Code</Filter>
+    </ClInclude>
+    <ClInclude Include="vpi_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external_app_launcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="apps_factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="castxml-gccxml_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="castxml_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gccxml_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xml_element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xml_reader_boost_property_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="serializablemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="codegenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test1.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test1.hpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test1_injected.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="external_app_launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="h\client_code\readme.txt">
+      <Filter>Public Header Files\Client Code</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

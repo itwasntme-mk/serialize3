@@ -1,0 +1,6 @@
+.vs 
+Win32
+*.vcproj.user
+*.i
+*.ii
+*.xml
