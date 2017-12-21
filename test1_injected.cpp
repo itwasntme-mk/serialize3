@@ -12,26 +12,46 @@
 #ifndef WRAP
   #define WRAP(...) __VA_ARGS__
 #endif
-inline void operator&(ASerializeDumper& dumper, const std::_Iosb<int>::_Dummy_enum& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::_Iosb<int>::_Dummy_enum& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const std::_Iosb<int>::_Fmtflags& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::_Iosb<int>::_Fmtflags& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const std::_Iosb<int>::_Iostate& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::_Iosb<int>::_Iostate& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const std::_Iosb<int>::_Openmode& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::_Iosb<int>::_Openmode& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const std::_Iosb<int>::_Seekdir& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::_Iosb<int>::_Seekdir& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const std::ios_base::event& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, std::ios_base::event& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const xtd::TMyClass::TEnumType& o) { dumper.Dump((unsigned int&)o); }
+
+inline void operator&(ASerializeDumper& dumper, const idtype_t& o) { dumper.Dump((const unsigned int&)o); }
+inline void operator&(ASerializeLoader& loader, idtype_t& o) { loader.Load((unsigned int&)o); }
+inline void operator&(ASerializeDumper& dumper, const _LIB_VERSION_TYPE& o) { dumper.Dump((const unsigned int&)o); }
+inline void operator&(ASerializeLoader& loader, _LIB_VERSION_TYPE& o) { loader.Load((unsigned int&)o); }
+inline void operator&(ASerializeDumper& dumper, const TEnumType& o) { dumper.Dump((const unsigned int&)o); }
+inline void operator&(ASerializeLoader& loader, TEnumType& o) { loader.Load((unsigned int&)o); }
+inline void operator&(ASerializeDumper& dumper, const xtd::TEnumType& o) { dumper.Dump((const unsigned int&)o); }
+inline void operator&(ASerializeLoader& loader, xtd::TEnumType& o) { loader.Load((unsigned int&)o); }
+inline void operator&(ASerializeDumper& dumper, const xtd::TMyClass::TEnumType& o) { dumper.Dump((const unsigned int&)o); }
 inline void operator&(ASerializeLoader& loader, xtd::TMyClass::TEnumType& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const boost::intrusive::compact_rbtree_node<void *>::color& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, boost::intrusive::compact_rbtree_node<void *>::color& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const boost::mpl::assert_::relations& o) { dumper.Dump((unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, boost::mpl::assert_::relations& o) { loader.Load((unsigned int&)o); }
-void* xtd::ABase::BuildForSerializer() { return 0; }
-void xtd::ABase::Dump(ASerializeDumper& dumper) const
+
+namespace xtd
+{
+void* ABase::BuildForSerializer() { return 0; }
+void* TMyClass::BuildForSerializer()
+  {
+  TMyClass* ptr = new TMyClass;
+  REGISTER_OBJECT((WRAP(TMyClass)), ptr);
+  return ptr;
+  }
+template <> void* TTemplate<int>::BuildForSerializer()
+  {
+  TTemplate<int>* ptr = new TTemplate<int>;
+  REGISTER_OBJECT((WRAP(TTemplate<int>)), ptr);
+  return ptr;
+  }
+template <> void* TTemplate<xtd::TMyClass>::BuildForSerializer()
+  {
+  TTemplate<xtd::TMyClass>* ptr = new TTemplate<xtd::TMyClass>;
+  REGISTER_OBJECT((WRAP(TTemplate<xtd::TMyClass>)), ptr);
+  return ptr;
+  }
+void* TMyClass1::BuildForSerializer()
+  {
+  TMyClass1* ptr = new TMyClass1;
+  REGISTER_OBJECT((WRAP(TMyClass1)), ptr);
+  return ptr;
+  }
+void ABase::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::ABase");
@@ -43,7 +63,7 @@ void xtd::ABase::Dump(ASerializeDumper& dumper) const
       dumper & m4[i][ii];
   DPOP_INDENT;
   }
-void xtd::ABase::Load(ASerializeLoader& loader)
+void ABase::Load(ASerializeLoader& loader)
   {
   LPUSH_INDENT;
   LLOGMSG("Load xtd::ABase");
@@ -55,14 +75,14 @@ void xtd::ABase::Load(ASerializeLoader& loader)
       loader & m4[i][ii];
   LPOP_INDENT;
   }
-TTypeId xtd::ABase::GetTypeId() const { return -1; }
-void xtd::ABase::DumpPointer(ASerializeDumper& dumper) const
+TTypeId ABase::GetTypeId() const { return -1; }
+void ABase::DumpPointer(ASerializeDumper& dumper) const
   {
   DLOGMSG("Dump xtd::ABase pointer");
   dumper.Dump(GetTypeId());
   dumper & *this;
   }
-void* xtd::ABase::LoadPointer(ASerializeLoader& loader)
+void* ABase::LoadPointer(ASerializeLoader& loader)
   {
   LLOGMSG("Load xtd::ABase pointer");
   TTypeId objectTypeId;
@@ -91,44 +111,38 @@ void* xtd::ABase::LoadPointer(ASerializeLoader& loader)
     } //end switch
   return o;
   } //end LoadPointer
-void* xtd::TMyClass::BuildForSerializer()
-  {
-  TMyClass* ptr = new TMyClass;
-  REGISTER_OBJECT((WRAP(TMyClass)), ptr);
-  return ptr;
-  }
-void xtd::TMyClass::Dump(ASerializeDumper& dumper) const
+void TMyClass::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::TMyClass");
   dumper & static_cast<const xtd::ABase&>(*this);
-  dumper & mm1;
+  dumper & (const unsigned int&)mm1;
   dumper & M1;
   dumper & M2;
   dumper & M3;
   dumper & M4;
   DPOP_INDENT;
   }
-void xtd::TMyClass::Load(ASerializeLoader& loader)
+void TMyClass::Load(ASerializeLoader& loader)
   {
   LPUSH_INDENT;
   LLOGMSG("Load xtd::TMyClass");
   loader & static_cast<xtd::ABase&>(*this);
-  loader & mm1;
+  loader & (unsigned int&)mm1;
   loader & M1;
   loader & M2;
   loader & M3;
   loader & M4;
   LPOP_INDENT;
   }
-TTypeId xtd::TMyClass::GetTypeId() const { return xtd__TMyClass_TYPE_ID; }
-void xtd::TMyClass::DumpPointer(ASerializeDumper& dumper) const
+TTypeId TMyClass::GetTypeId() const { return xtd__TMyClass_TYPE_ID; }
+void TMyClass::DumpPointer(ASerializeDumper& dumper) const
   {
   DLOGMSG("Dump xtd::TMyClass pointer");
   dumper.Dump(GetTypeId());
   dumper & *this;
   }
-void* xtd::TMyClass::LoadPointer(ASerializeLoader& loader)
+void* TMyClass::LoadPointer(ASerializeLoader& loader)
   {
   LLOGMSG("Load xtd::TMyClass pointer");
   TTypeId objectTypeId;
@@ -157,34 +171,28 @@ void* xtd::TMyClass::LoadPointer(ASerializeLoader& loader)
     } //end switch
   return o;
   } //end LoadPointer
-template <> void* xtd::TTemplate<int>::BuildForSerializer()
-  {
-  TTemplate<int>* ptr = new TTemplate<int>;
-  REGISTER_OBJECT((WRAP(TTemplate<int>)), ptr);
-  return ptr;
-  }
-template <> void xtd::TTemplate<int>::Dump(ASerializeDumper& dumper) const
+template <> void TTemplate<int>::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::TTemplate<int>");
   dumper & m1;
   DPOP_INDENT;
   }
-template <> void xtd::TTemplate<int>::Load(ASerializeLoader& loader)
+template <> void TTemplate<int>::Load(ASerializeLoader& loader)
   {
   LPUSH_INDENT;
   LLOGMSG("Load xtd::TTemplate<int>");
   loader & m1;
   LPOP_INDENT;
   }
-template <> TTypeId xtd::TTemplate<int>::GetTypeId() const { return -1; }
-template <> void xtd::TTemplate<int>::DumpPointer(ASerializeDumper& dumper) const
+template <> TTypeId TTemplate<int>::GetTypeId() const { return -1; }
+template <> void TTemplate<int>::DumpPointer(ASerializeDumper& dumper) const
   {
   DLOGMSG("Dump xtd::TTemplate<int> pointer");
   dumper.Dump(GetTypeId());
   dumper & *this;
   }
-template <> void* xtd::TTemplate<int>::LoadPointer(ASerializeLoader& loader)
+template <> void* TTemplate<int>::LoadPointer(ASerializeLoader& loader)
   {
   LLOGMSG("Load xtd::TTemplate<int> pointer");
   TTypeId objectTypeId;
@@ -206,34 +214,28 @@ template <> void* xtd::TTemplate<int>::LoadPointer(ASerializeLoader& loader)
     } //end switch
   return o;
   } //end LoadPointer
-template <> void* xtd::TTemplate<xtd::TMyClass>::BuildForSerializer()
-  {
-  TTemplate<xtd::TMyClass>* ptr = new TTemplate<xtd::TMyClass>;
-  REGISTER_OBJECT((WRAP(TTemplate<xtd::TMyClass>)), ptr);
-  return ptr;
-  }
-template <> void xtd::TTemplate<xtd::TMyClass>::Dump(ASerializeDumper& dumper) const
+template <> void TTemplate<xtd::TMyClass>::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::TTemplate<xtd::TMyClass>");
   dumper & m1;
   DPOP_INDENT;
   }
-template <> void xtd::TTemplate<xtd::TMyClass>::Load(ASerializeLoader& loader)
+template <> void TTemplate<xtd::TMyClass>::Load(ASerializeLoader& loader)
   {
   LPUSH_INDENT;
   LLOGMSG("Load xtd::TTemplate<xtd::TMyClass>");
   loader & m1;
   LPOP_INDENT;
   }
-template <> TTypeId xtd::TTemplate<xtd::TMyClass>::GetTypeId() const { return -1; }
-template <> void xtd::TTemplate<xtd::TMyClass>::DumpPointer(ASerializeDumper& dumper) const
+template <> TTypeId TTemplate<xtd::TMyClass>::GetTypeId() const { return -1; }
+template <> void TTemplate<xtd::TMyClass>::DumpPointer(ASerializeDumper& dumper) const
   {
   DLOGMSG("Dump xtd::TTemplate<xtd::TMyClass> pointer");
   dumper.Dump(GetTypeId());
   dumper & *this;
   }
-template <> void* xtd::TTemplate<xtd::TMyClass>::LoadPointer(ASerializeLoader& loader)
+template <> void* TTemplate<xtd::TMyClass>::LoadPointer(ASerializeLoader& loader)
   {
   LLOGMSG("Load xtd::TTemplate<xtd::TMyClass> pointer");
   TTypeId objectTypeId;
@@ -255,13 +257,7 @@ template <> void* xtd::TTemplate<xtd::TMyClass>::LoadPointer(ASerializeLoader& l
     } //end switch
   return o;
   } //end LoadPointer
-void* xtd::TMyClass1::BuildForSerializer()
-  {
-  TMyClass1* ptr = new TMyClass1;
-  REGISTER_OBJECT((WRAP(TMyClass1)), ptr);
-  return ptr;
-  }
-void xtd::TMyClass1::Dump(ASerializeDumper& dumper) const
+void TMyClass1::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::TMyClass1");
@@ -286,7 +282,7 @@ void xtd::TMyClass1::Dump(ASerializeDumper& dumper) const
   dumper & M15;
   DPOP_INDENT;
   }
-void xtd::TMyClass1::Load(ASerializeLoader& loader)
+void TMyClass1::Load(ASerializeLoader& loader)
   {
   LPUSH_INDENT;
   LLOGMSG("Load xtd::TMyClass1");
@@ -311,14 +307,14 @@ void xtd::TMyClass1::Load(ASerializeLoader& loader)
   loader & M15;
   LPOP_INDENT;
   }
-TTypeId xtd::TMyClass1::GetTypeId() const { return xtd__TMyClass1_TYPE_ID; }
-void xtd::TMyClass1::DumpPointer(ASerializeDumper& dumper) const
+TTypeId TMyClass1::GetTypeId() const { return xtd__TMyClass1_TYPE_ID; }
+void TMyClass1::DumpPointer(ASerializeDumper& dumper) const
   {
   DLOGMSG("Dump xtd::TMyClass1 pointer");
   dumper.Dump(GetTypeId());
   dumper & *this;
   }
-void* xtd::TMyClass1::LoadPointer(ASerializeLoader& loader)
+void* TMyClass1::LoadPointer(ASerializeLoader& loader)
   {
   LLOGMSG("Load xtd::TMyClass1 pointer");
   TTypeId objectTypeId;
@@ -340,3 +336,4 @@ void* xtd::TMyClass1::LoadPointer(ASerializeLoader& loader)
     } //end switch
   return o;
   } //end LoadPointer
+} // namespace xtd

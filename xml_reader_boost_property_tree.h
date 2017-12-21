@@ -139,7 +139,10 @@ class TEnumWrapper : public AXmlItemWrapper
 
     // sizeof in bits
     int GetSizeof() const
-      { return std::stoi(get_attr_value(ATTRIBUTE_SIZE)); }
+      {
+      const std::string& _sizeof = get_attr_value(ATTRIBUTE_SIZE);
+      return _sizeof.empty() ? 0 : std::stoi(_sizeof);
+      }
   };
 
 class TNamespaceWrapper : public AXmlItemWrapper

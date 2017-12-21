@@ -170,7 +170,8 @@ bool AApplication::Preprocess()
     Compiler = "cl";
   else if (strcasecmp(Compiler.c_str(), "clang") == 0 || strcasecmp(Compiler.c_str(), "clang++") == 0)
     Compiler = "clang";
-  else if (strcasecmp(Compiler.c_str(), "gcc") == 0 || strcasecmp(Compiler.c_str(), "gcc++") == 0)
+  else if (strcasecmp(Compiler.c_str(), "gcc") == 0 || strcasecmp(Compiler.c_str(), "gcc++") == 0 ||
+           strcasecmp(Compiler.c_str(), "c++") == 0)
     Compiler = "gcc";
   else
     {
@@ -179,9 +180,14 @@ bool AApplication::Preprocess()
     }
 
   path compiler = CompilerPath / Compiler;
-  std::string command('\"' + compiler.string() + "\" ");
 
-  command += CompilerOptions;
+#if defined(_WIN32)
+  std::string command('\"' + compiler.string() + '\"');
+#else
+  std::string command(compiler.string());
+#endif
+
+  command += ' ' + CompilerOptions;
 
   if (Compiler == "cl")
     command += ConfigureMsvc();
@@ -197,8 +203,9 @@ bool AApplication::Preprocess()
 
   path logFileName(WorkingDir / "preprocessing.log");
   std::string errorString;
-  bool result = LaunchExternalConsoleProcess(command.c_str(), logFileName.generic_string().c_str(),
-                                             errorString);
+  bool result =
+    LaunchExternalConsoleProcess(command.c_str(), logFileName.generic_string().c_str(), errorString) &&
+    bfs::exists(PreprocessedFile);
 
   if (result)
     {
@@ -223,8 +230,9 @@ bool AApplication::GenerateXML()
 
   path logFileName(WorkingDir / "xml-generator.log");
   std::string errorString;
-  bool result = LaunchExternalConsoleProcess(command.c_str(), logFileName.generic_string().c_str(),
-                                             errorString);
+  bool result =
+    LaunchExternalConsoleProcess(command.c_str(), logFileName.generic_string().c_str(), errorString) &&
+    bfs::exists(XmlFile);
 
   if (result)
     {

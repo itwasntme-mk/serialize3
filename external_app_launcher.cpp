@@ -5,7 +5,7 @@
 #if defined(_WIN32)
 #include <process.h> // For spawnv
 #include <windows.h> // For SetConsoleCtrlHanlder
-#elif defined(UNIX)
+#elif defined(UNIX) || defined(__linux__)
 #include <boost/tokenizer.hpp>
 
 #include <cstdlib>
@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #endif
 
+#include <cstring>
 #include <memory>
 
 namespace
@@ -54,13 +55,10 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
   if (commandLine == NULL || stdOutFileName == NULL)
     return false;
   
-#ifdef UNIX
+#if defined(UNIX) || defined(__linux__)
   int stdOutFileDescriptor = open(stdOutFileName, O_WRONLY|O_CREAT|O_APPEND,0644);
   if (stdOutFileDescriptor == -1)
-    {
-    exitStatus = RV_ERR_CHILD_PROCESS_MISSING_FILE;
     return false;
-    }
 
   // parse the command line into an argv array
   std::vector<std::string> commandLineTokens;
@@ -91,7 +89,6 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
   if(pid < 0)
     {
     perror("Couldn't fork");
-    exitStatus = RV_ERR_CHILD_PROCESS_LAUNCH;
     return false;
     }
   else if(pid == 0) /* child code, run in a seperate process */
@@ -116,7 +113,6 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
     /* Code below will never happen unless exec fails */
     fprintf(stderr,"execv string=%s\n",childArgv[0]);
     perror("Couldn't exec");
-    exitStatus = RV_ERR_CHILD_PROCESS_MISSING_FILE;
     return false;
     }
   else
@@ -125,12 +121,10 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
     while ( waitpid( pid, &waitExitStatus, 0 ) < 0 && errno == EINTR );
     if (WIFEXITED(waitExitStatus))
       {
-      exitStatus = WEXITSTATUS(waitExitStatus);
       return true;
       }
     else
       {
-      exitStatus = RV_ERR_CHILD_PROCESS_LAUNCH;
       return false;
       }
     }
@@ -146,7 +140,7 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
                                      FILE_SHARE_READ | FILE_SHARE_WRITE, &saAttr, OPEN_ALWAYS, NULL, NULL );
   if ( !handleFileOut )
     {
-#ifndef UNIX
+#if !defined(UNIX) && !defined(__linux__)
     errorString = FetchLastErrorMessage();
 #endif
     return false;
@@ -175,7 +169,7 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
 
   if (!success)
     {
-#ifndef UNIX
+#if !defined(UNIX) && !defined(__linux__)
     errorString = FetchLastErrorMessage();
 #endif    
     CloseHandle(handleFileOut);

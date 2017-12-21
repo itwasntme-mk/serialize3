@@ -114,7 +114,7 @@ class TTemplate
     TClass m1;
 
 #if !defined(_MSC_VER)
-    std::tuple<int, std::string, double> m2;
+    //std::tuple<int, std::string, double> m2;
 #endif
   };
 

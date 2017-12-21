@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #include "serializablemap.h"
 #include "constants.h"
@@ -294,7 +295,7 @@ bool TSerializableMap::AnalyzeMembers(const TClass& _class)
         break;
 
       case TType::Typedef:
-        throw std::exception("Unexpected Typedef in " __FUNCTION__);
+        throw std::runtime_error(std::string("Unexpected Typedef in ") + __FUNCTION__);
 
       default:
         LOG_ERROR("cannot serialize member of unknown type: " << member.GetFullName());
@@ -628,6 +629,7 @@ std::string TSerializableMap::GetTypeEnumCast(const TEnum& _enum, bool dump)
       result += "unsigned char&)"; break;
     case 16:
       result += "unsigned short&)"; break;
+    case 0: // default sizeof
     case 32:
       result += "unsigned int&)"; break;
     case 64:
