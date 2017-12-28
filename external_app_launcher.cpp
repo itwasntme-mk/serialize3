@@ -5,6 +5,7 @@
 #if defined(_WIN32)
 #include <process.h> // For spawnv
 #include <windows.h> // For SetConsoleCtrlHanlder
+
 #elif defined(UNIX) || defined(__linux__)
 #include <boost/tokenizer.hpp>
 
@@ -17,8 +18,13 @@
 #include <fcntl.h>
 #endif
 
+#include <boost/filesystem.hpp>
+
 #include <cstring>
 #include <memory>
+
+
+namespace bfs = boost::filesystem;
 
 namespace
 {
@@ -54,13 +60,8 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
   {
   if (commandLine == NULL || stdOutFileName == NULL)
     return false;
-  
+
 #if defined(UNIX) || defined(__linux__)
-  /*std::string cmdLine(commandLine);
-  cmdLine += " &> ";
-  cmdLine += stdOutFileName;
-  int result = std::system("cmdLine.c_str()");
-  return result;*/
 
   int stdOutFileDescriptor = open(stdOutFileName, O_WRONLY|O_CREAT|O_APPEND,0644);
   if (stdOutFileDescriptor == -1)
@@ -79,6 +80,16 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
     {
     if (!i->empty())
       commandLineTokens.push_back(*i);
+    }
+
+  bfs::path exeFile(commandLineTokens[0]);
+
+  if (bfs::exists(exeFile) == false)
+    {
+    char msg[1024] = "ERROR: Cannot find executable: ";
+    strcat(msg, commandLineTokens[0].c_str());
+    write(stdOutFileDescriptor, msg, strlen(msg));
+    return false;
     }
 
   // EMF: ugly hack that I don't really understand:

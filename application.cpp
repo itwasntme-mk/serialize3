@@ -187,21 +187,31 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
   {
   LOG_INFO("PREPROCESSING ...");
 
-  if (strcasecmp(Compiler.c_str(), "msvc") == 0 || strcasecmp(Compiler.c_str(), "cl") == 0)
-    Compiler = "cl";
-  else if (strcasecmp(Compiler.c_str(), "clang") == 0 || strcasecmp(Compiler.c_str(), "clang++") == 0)
-    Compiler = "clang";
-  else if (strcasecmp(Compiler.c_str(), "gcc") == 0 || strcasecmp(Compiler.c_str(), "gcc++") == 0 ||
-           strcasecmp(Compiler.c_str(), "c++") == 0)
-    Compiler = "gcc";
+  TFileComparator fileComparator(PreprocessedFile, check_for_changes);
+  std::string compilerName;
+  path compilerFullName(Compiler);
+  bool ignoreCompilerPath = compilerFullName.has_parent_path(); // full path to compiler passed
+  path compiler;
+  
+  if (ignoreCompilerPath)
+    compiler = Compiler;
+  else
+    compiler = CompilerPath / Compiler;
+
+  compilerName = compilerFullName.stem().generic_string();
+
+  if (strcasecmp(compilerName.c_str(), "msvc") == 0 || strcasecmp(compilerName.c_str(), "cl") == 0)
+    compilerName = "cl";
+  else if (strcasecmp(compilerName.c_str(), "clang") == 0 || strcasecmp(compilerName.c_str(), "clang++") == 0)
+    compilerName = "clang";
+  else if (strcasecmp(compilerName.c_str(), "gcc") == 0 || strcasecmp(compilerName.c_str(), "gcc++") == 0 ||
+           strcasecmp(compilerName.c_str(), "c++") == 0)
+    compilerName = "gcc";
   else
     {
-    LOG_ERROR("Uknown compiler: " << Compiler);
+    LOG_ERROR("Uknown compiler: " << compilerName);
     return TPhaseResult::ERROR;
     }
-
-  TFileComparator fileComparator(PreprocessedFile, check_for_changes);
-  path compiler = CompilerPath / Compiler;
 
 #if defined(_WIN32)
   std::string command('\"' + compiler.string() + '\"');
@@ -211,9 +221,9 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
 
   command += ' ' + CompilerOptions;
 
-  if (Compiler == "cl")
+  if (compilerName == "cl")
     command += ConfigureMsvc();
-  else if (Compiler == "clang")
+  else if (compilerName == "clang")
     command += ConfigureClang();
   else // gcc
     command += ConfigureGcc();
