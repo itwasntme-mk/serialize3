@@ -1,3 +1,5 @@
+///\file castxml_app.cpp
+
 #include "application.h"
 #include "external_app_launcher.h"
 

@@ -1,3 +1,5 @@
+///\file main.cpp
+
 #include "apps_factory.h"
 #include "application.h"
 #include "logger.h"

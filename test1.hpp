@@ -113,8 +113,8 @@ class TTemplate
   public:
     TClass m1;
 
-#if !defined(_MSC_VER)
-    //std::tuple<int, std::string, double> m2;
+#if !defined(_MSC_VER) || (_MSC_VER >= 1912)
+    std::tuple<int, std::string, double> m2;
 #endif
   };
 

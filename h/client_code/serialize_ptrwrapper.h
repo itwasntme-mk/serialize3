@@ -1,6 +1,6 @@
-#pragma once
+/**\file serialize_ptrwrapper.h 
 
-/** This file contains declarations of TSerializePtrType class (to be used in client code).
+    This file contains declarations of TSerializePtrType class (to be used in client code).
     Other classes are they helpers and should not be used directly - they must be placed here 
     only becasuse of C++ language needs.
 
@@ -8,6 +8,7 @@
              local module header in using module defining such macro and including it anywhere
              it is needed.
 */
+#pragma once
 
 #include <serialize3/h/client_code/serialize_macros.h>
 #include <serialize3/h/client_code/serialize_utils.h>

@@ -1,9 +1,12 @@
+///\file codegenerator.h
+
 #include "logger.h"
 
 #include <fstream>
 #include <vector>
 #include <string>
 
+/// Helper class for generate serialization code.
 class TCodeGenerator
   {
   public:

@@ -1,3 +1,4 @@
+///\file serialize_utils.h
 #pragma once
 
 #if defined(__GNUC__) && defined(__unix__)

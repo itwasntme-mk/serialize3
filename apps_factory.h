@@ -7,6 +7,7 @@
 
 class AApplication;
 
+/// Build any kind of registered AApplication subclass.
 class TApplicationsFactory
   {
   public:

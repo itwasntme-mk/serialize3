@@ -16,6 +16,12 @@
 class TClass;
 class TEnum;
 
+/** Main class of application. Control whole process, fire phases:
+    - preprocess input files with given compiler;
+    - generate xml intermediate file using given xml-generator;
+    - read and analyze xml file;
+    - generate serialization code for all marked classes and enum types.
+*/
 class AApplication
   {
   public:
@@ -57,14 +63,14 @@ class AApplication
     /// Preprocess file with main compiler.
     virtual TPhaseResult Preprocess(bool check_for_changes);
 
-    /// Generate xml from input file use external tool (gccxml, castxml etc.).
+    /// Generate xml from input file using external tool (gccxml, castxml etc.).
     virtual TPhaseResult GenerateXML(bool check_for_changes);
 
     /// Prepare cmd line for xml-generator.
     virtual std::string ComposeXmlGeneratorCmdLine() = 0;
 
     /** Read generated xml file into memory and create internal representation.
-        Now is common for all supported xml AST formats.
+        Now it is common for all supported xml AST formats.
     */
     virtual bool ParseXML();
 

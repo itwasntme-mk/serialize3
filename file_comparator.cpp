@@ -1,3 +1,5 @@
+///\file file_comparator.cpp
+
 #include "file_comparator.h"
 
 #include <iostream>
@@ -31,15 +33,13 @@ bool TFileComparator::Compare() const
   bio::mapped_file_source f1(NewFile);
   bio::mapped_file_source f2(OldFile);
 
-  result = (f1.size() == f2.size() &&
-    std::equal(f1.data(), f1.data() + f1.size(), f2.data()));
-
-  //bool result = bfs::exists(NewFile) && bfs::exists(OldFile) &&
-    //std::ifstream(NewFile.generic_string()).rdbuf() == std::ifstream(OldFile.generic_string()).rdbuf();
+  result = (f1.size() == f2.size() && std::equal(f1.data(), f1.data() + f1.size(), f2.data()));
   }
 
   if (result == false)
     bfs::rename(NewFile, OldFile);
+
+  NewFile = OldFile;
 
   return result;
   }

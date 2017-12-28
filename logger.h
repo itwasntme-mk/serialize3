@@ -1,4 +1,4 @@
-///\ fole logger.h
+///\file logger.h
 #pragma once
 
 #include <iostream>
@@ -7,6 +7,7 @@
 #include <string>
 #include <exception>
 
+/// Helper class to allow log into cout/cerr and optional external file simultanously.
 class TLogger
   {
   public:

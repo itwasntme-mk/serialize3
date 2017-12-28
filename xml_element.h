@@ -1,4 +1,4 @@
-///\file xml_element.h
+///\file xml_element.h - contains definitions of objects created while xml analysis
 #pragma once
 
 #include "constants.h"

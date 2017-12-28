@@ -1,3 +1,5 @@
+///\file codegenerator.cpp
+
 #include "codegenerator.h"
 
 #include <cassert>

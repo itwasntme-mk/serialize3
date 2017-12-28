@@ -1,5 +1,10 @@
 #include <boost/filesystem.hpp>
 
+/** Helper class to compare files: first name is given from caller, second is created internally
+    and replace that from caller one. After comparison, if files are different, internal file
+    replace the old one - if files are the same, internal file is simply removed and old stay
+    untouched.
+*/
 class TFileComparator
   {
   private:

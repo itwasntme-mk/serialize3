@@ -1,4 +1,9 @@
-#include <boost/foreach.hpp>
+///\file serializablemap.cpp
+
+#include "serializablemap.h"
+#include "constants.h"
+#include "file_comparator.h"
+
 #include <fstream>
 #include <string>
 #include <algorithm>
@@ -7,10 +12,6 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-
-#include "serializablemap.h"
-#include "constants.h"
-#include "file_comparator.h"
 
 
 namespace bfs = boost::filesystem;

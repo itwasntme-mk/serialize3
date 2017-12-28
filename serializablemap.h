@@ -1,3 +1,4 @@
+///\file serializablemap.h
 #pragma once
 
 #include "constants.h"
@@ -10,6 +11,7 @@
 
 #include <string>
 
+/// Main class responsible for serialization code generation based on objects created while xml analysis.
 class TSerializableMap
   {
   private:

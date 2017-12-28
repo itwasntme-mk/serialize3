@@ -1,8 +1,7 @@
-#pragma once
-/*
-  Description: contains strings dependent on other outside modules.
-               Currently these are GCC_XML and boost::serialization.
+/** \file constants.h - contains strings dependent on other outside modules.
+                        Currently these are GCC_XML and boost::serialization.
 */
+#pragma once
 
 #include "h/client_code/serialize_macros.h"
 
@@ -62,22 +61,6 @@ const char MANUAL_OBJECT_SERIALIZE_MARKER[] = STRINGIZE(MANUAL_OBJECT_SERIALIZE_
 const char MANUAL_FULL_MARKER[] = STRINGIZE(MANUAL_FULL_MARKER_NAME);
 const char DO_NOT_SERIALIZE_MARKER[] = STRINGIZE(DO_NOT_SERIALIZE_MARKER_NAME);
 
-
-/*
-//IVAN Headers in boost/serialization that need to be included for 
-//     corresponding stl container
-const char *const STLHeaderNames[] = 
-  { 
-  "vector.hpp",   // 0
-  "map.hpp",      // 1
-  "list.hpp",     // 2
-  "set.hpp",      // 3
-  "string.hpp",   // 4
-  "deque.hpp",    // 5
-  "hash_map.hpp", // 6
-  "hash_set.hpp"  // 7
-  };
-*/
 
 //IVAN Used to exchange type of serializable object between 
 //     analysis funcs and factory object

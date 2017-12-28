@@ -1,3 +1,4 @@
+///\file dumpertemplates.h
 #pragma once
 
 //Overloads "operator &" for loading different serializable ojects.
@@ -119,7 +120,7 @@ void operator&(ASerializeDumper& dumper, const std::pair<T1,T2>& p)
   DPOP_INDENT;
   }
 
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) || (_MSC_VER >= 1912)
 template <std::size_t I = 0, typename... TTypes>
 typename std::enable_if<I == sizeof...(TTypes)>::type
 Dump(ASerializeDumper& dumper, const std::tuple<TTypes...>& t) {}

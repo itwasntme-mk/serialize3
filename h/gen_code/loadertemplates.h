@@ -1,3 +1,4 @@
+///\file loadertemplates.h
 #pragma once
 
 //Overloads "operator &" for loading different serializable ojects.
@@ -107,7 +108,7 @@ void operator&(ASerializeLoader& loader, std::pair<T1,T2>& p)
   LPOP_INDENT;
   }
 
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) || (_MSC_VER >= 1912)
 template <std::size_t I = 0, typename... TTypes>
 typename std::enable_if<I == sizeof...(TTypes)>::type
 Load(ASerializeLoader& loader, std::tuple<TTypes...>& t) {}

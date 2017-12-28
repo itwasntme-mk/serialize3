@@ -21,8 +21,8 @@
     <Filter Include="Public Header Files\Storage">
       <UniqueIdentifier>{295b3df7-c85a-4f1b-9b78-b38af82db685}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tests">
-      <UniqueIdentifier>{fbe10a03-15fb-41f3-9965-8832c209808e}</UniqueIdentifier>
+    <Filter Include="Test files">
+      <UniqueIdentifier>{c994f915-2619-4650-8302-2c68d5091fa2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -74,22 +74,25 @@
     <ClInclude Include="str_less.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="codegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="serializablemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="codegenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="h\gen_code\serializable_boost_cntrs_includes.h">
       <Filter>Public Header Files\Generated Code</Filter>
     </ClInclude>
-    <ClInclude Include="vpi_api.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="test2.hpp">
+      <Filter>Test files</Filter>
     </ClInclude>
     <ClInclude Include="external_app_launcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file_comparator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -118,28 +121,31 @@
     <ClCompile Include="xml_reader_boost_property_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="serializablemap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="codegenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test1.cpp">
-      <Filter>Tests</Filter>
+    <ClCompile Include="serializablemap.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test1.hpp">
-      <Filter>Tests</Filter>
+      <Filter>Test files</Filter>
     </ClCompile>
     <ClCompile Include="test1_injected.cpp">
-      <Filter>Tests</Filter>
+      <Filter>Test files</Filter>
     </ClCompile>
     <ClCompile Include="external_app_launcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file_comparator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="h\client_code\readme.txt">
       <Filter>Public Header Files\Client Code</Filter>
+    </Text>
+    <Text Include="cl_cmdline.txt">
+      <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>
 </Project>

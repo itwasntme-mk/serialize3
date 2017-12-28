@@ -1,4 +1,4 @@
-///\file xml_reader_boost_property_tree.h
+///\file xml_reader_boost_property_tree.h - xml reader based on boost xml reader and property tree
 #pragma once
 
 #include "constants.h"
