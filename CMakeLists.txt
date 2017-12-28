@@ -10,7 +10,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 SET(BOOST_COMPONENTS)
 LIST(APPEND BOOST_COMPONENTS system
                              filesystem
-                             program_options)
+                             program_options
+                             iostreams)
 FIND_PACKAGE(Boost 1.58 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
 include_directories(SYSTEM "./")
@@ -27,7 +28,8 @@ add_executable( serialize3
                 external_app_launcher.cpp
                 serializablemap.cpp
                 xml_element.cpp
-                xml_reader_boost_property_tree.cpp )
+                xml_reader_boost_property_tree.cpp
+                file_comparator.cpp )
 target_link_libraries(serialize3 ${Boost_LIBRARIES})
 
 message(status "** Boost Include: ${Boost_INCLUDE_DIR}")

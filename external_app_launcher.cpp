@@ -56,6 +56,12 @@ bool LaunchExternalConsoleProcess(const char* commandLine, const char* stdOutFil
     return false;
   
 #if defined(UNIX) || defined(__linux__)
+  /*std::string cmdLine(commandLine);
+  cmdLine += " &> ";
+  cmdLine += stdOutFileName;
+  int result = std::system("cmdLine.c_str()");
+  return result;*/
+
   int stdOutFileDescriptor = open(stdOutFileName, O_WRONLY|O_CREAT|O_APPEND,0644);
   if (stdOutFileDescriptor == -1)
     return false;

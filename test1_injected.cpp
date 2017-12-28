@@ -5,7 +5,7 @@
 #include "test1.hpp"
 #include <serialize3/h/gen_code/dumpertemplates.h>
 #include <serialize3/h/gen_code/loadertemplates.h>
-#include "test1_typeids.h"
+#include "test1_typeids__temporary_internal_file.hpp"
 #ifndef REGISTER_OBJECT
   #define REGISTER_OBJECT(_class_,_ptr_)
 #endif

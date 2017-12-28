@@ -22,9 +22,9 @@ class TSerializableMap
   public:
     TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
       const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-      const std::vector<std::string>& ignoredNamespaces, int indent);
+      const std::vector<std::string>& ignoredNamespaces, int indent, bool check_for_changes);
 
-    bool Generate();
+    AApplication::TPhaseResult Generate();
 
   private:
     bool WriteParsedHeaderInjectedFunctions();
@@ -75,6 +75,7 @@ class TSerializableMap
     const TEnums&       Enums;
     int                 TypeIdCounter = 1;
     TLogger&            Logger;
+    bool                CheckForChanges = false;
 
     int                 Errors = 0;
     TCodeGenerator      CodeGenerator; //writes to output files

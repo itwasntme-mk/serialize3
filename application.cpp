@@ -6,6 +6,7 @@
 #include "xml_reader_boost_property_tree.h"
 #include "serializablemap.h"
 #include "external_app_launcher.h"
+#include "file_comparator.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp>
@@ -28,7 +29,6 @@ namespace bpo = boost::program_options;
 namespace bfs = boost::filesystem;
 namespace bpt = boost::property_tree;
 
-
 #if defined(USE_SORTED_CLASSES)
 inline void AApplication::OrderClass(const TClass& _class)
   {
@@ -41,7 +41,12 @@ inline void AApplication::OrderClass(const TClass& _class)
 
 int AApplication::Run(const bpo::variables_map& args)
   {
+  std::string stop_when_no_changes;
   std::string logfile;
+  TPhaseResult result = TPhaseResult::OK;
+
+  if (args.count("stop-when-no-changes"))
+    stop_when_no_changes = args["stop-when-no-changes"].as<std::string>();
 
   if (args.count("log"))
     logfile = args["log"].as<std::string>();
@@ -50,10 +55,25 @@ int AApplication::Run(const bpo::variables_map& args)
 
   if (Initialize(args) == false)
     return -1;
-  if (Preprocess() == false)
+
+  result = Preprocess(stop_when_no_changes == "preprocess");
+
+  if (result == TPhaseResult::ERROR)
     return -2;
-  if (GenerateXML() == false)
+  if (result == TPhaseResult::NO_CHANGES)
+    {
+    LOG_INFO("FINISHED (no changes after preprocessing)");
+    return 0;
+    }
+
+  result = GenerateXML(stop_when_no_changes == "xml");    
+  if (result == TPhaseResult::ERROR)
     return -3;
+  if (result == TPhaseResult::NO_CHANGES)
+    {
+    LOG_INFO("FINISHED (no changes after xml generation)");
+    return 0;
+    }
 
   BOOST_SCOPE_EXIT(this_)
     {
@@ -63,8 +83,15 @@ int AApplication::Run(const bpo::variables_map& args)
 
   if (ParseXML() == false)
     return -4;
-  if (GenerateSerializationCode(args) == false)
+
+  result = GenerateSerializationCode(args);
+  if (result == TPhaseResult::ERROR)
     return -5;
+  if (result == TPhaseResult::NO_CHANGES)
+    {
+    LOG_INFO("FINISHED (no changes after in generated hpp/cpp files)");
+    return 0;
+    }
 
   LOG_INFO("FINISHED");
 
@@ -150,19 +177,13 @@ void AApplication::RewriteFileToLog(const path& filename)
     return;
     }
 
-  static char buf[2048];
-
-  while (file.eof() == false)
-    {
-    file.getline(buf, 2048, '\n');
-    LOG_INFO(buf);
-    }
+  LOG_INFO(file.rdbuf());
 
   file.close();
   bfs::remove(filename);
   }
 
-bool AApplication::Preprocess()
+AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
   {
   LOG_INFO("PREPROCESSING ...");
 
@@ -176,9 +197,10 @@ bool AApplication::Preprocess()
   else
     {
     LOG_ERROR("Uknown compiler: " << Compiler);
-    return false;
+    return TPhaseResult::ERROR;
     }
 
+  TFileComparator fileComparator(PreprocessedFile, check_for_changes);
   path compiler = CompilerPath / Compiler;
 
 #if defined(_WIN32)
@@ -211,19 +233,20 @@ bool AApplication::Preprocess()
     {
     bfs::remove(logFileName);
     LOG_INFO("... DONE");
+    return fileComparator.Compare() ? TPhaseResult::NO_CHANGES : TPhaseResult::OK;
     }
   else
     {
     if (Logger.IsQuiet() == false)
       RewriteFileToLog(logFileName);
     LOG_INFO("... FAILED");
+    return TPhaseResult::ERROR;
     }
-
-  return result;
   }
 
-bool AApplication::GenerateXML()
+AApplication::TPhaseResult AApplication::GenerateXML(bool check_for_changes)
   {
+  TFileComparator fileComparator(XmlFile, check_for_changes);
   std::string command(ComposeXmlGeneratorCmdLine());
 
   LOG_VERBOSE("Run cmd: " << command);
@@ -238,15 +261,15 @@ bool AApplication::GenerateXML()
     {
     bfs::remove(logFileName);
     LOG_INFO("... DONE");
+    return fileComparator.Compare() ? TPhaseResult::NO_CHANGES : TPhaseResult::OK;
     }
   else
     {
     if (Logger.IsQuiet() == false)
       RewriteFileToLog(logFileName);
     LOG_INFO("... FAILED");
+    return TPhaseResult::ERROR;
     }
-
-  return result;
   }
 
 bool AApplication::ParseXML()
@@ -633,15 +656,17 @@ bool AApplication::ParseXML()
   return (error == false);
   }
 
-bool AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
+AApplication::TPhaseResult AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
   {
   std::vector<std::string> ignoredNamespaces;
+  bool check_for_changes = (args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "xml");
 
   if (args.count("ignore-namespace"))
     ignoredNamespaces = args["ignore-namespace"].as<std::vector<std::string>>();
 
   TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles,
-    WorkingDir, OutputFilePrefix, ignoredNamespaces, args["indent"].as<int>());
+    WorkingDir, OutputFilePrefix, ignoredNamespaces, args["indent"].as<int>(),
+    args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "cpp");
 
   return serializableMap.Generate();
   }

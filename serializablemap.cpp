@@ -10,38 +10,49 @@
 
 #include "serializablemap.h"
 #include "constants.h"
+#include "file_comparator.h"
+
+
+namespace bfs = boost::filesystem;
 
 
 TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
   const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-  const std::vector<std::string>& ignoredNamespaces, int indent)
-  : Classes(classes), Enums(enums), Logger(logger), CodeGenerator(logger, Indent), Inputs(inputs),
-    IgnoredNamespaces(ignoredNamespaces), Indent(indent, ' '), Indent2(indent * 2, ' '),
-    Indent3(indent * 3, ' ')
+  const std::vector<std::string>& ignoredNamespaces, int indent, bool check_for_changes)
+  : Classes(classes), Enums(enums), Logger(logger), CheckForChanges(check_for_changes),
+    CodeGenerator(logger, Indent), Inputs(inputs), IgnoredNamespaces(ignoredNamespaces),
+    Indent(indent, ' '), Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
   {
   ParsedHeaderTypeIdsFileName = working_dir / (output_prefix + "_typeids");
-  ParsedHeaderTypeIdsFileName.replace_extension(".h");
+  ParsedHeaderTypeIdsFileName.replace_extension(".hpp");
   InjectedFunctionsFileName = working_dir / (output_prefix + "_injected");
   InjectedFunctionsFileName.replace_extension(".cpp");
   }
 
-bool TSerializableMap::Generate()
+AApplication::TPhaseResult TSerializableMap::Generate()
   {
   LOG_INFO("WRITE OUTPUT FILES ...");
+  LOG_INFO("GENERATING " << ParsedHeaderTypeIdsFileName << " ...")
+  TFileComparator hppComparator(ParsedHeaderTypeIdsFileName, CheckForChanges);
+  bool changes = false;
 
   if (WriteParsedHeaderTypeIds() == false)
-    return false;
+    return AApplication::TPhaseResult::ERROR;
+
+  changes |= (hppComparator.Compare() == false);
+  LOG_INFO("GENERATING " << InjectedFunctionsFileName << " ...")
+  TFileComparator cppComparator(InjectedFunctionsFileName, CheckForChanges);
 
   if (WriteParsedHeaderInjectedFunctions() == false)
-    return false;
+    return AApplication::TPhaseResult::ERROR;
 
-  return Errors == 0;
+  changes |= (cppComparator.Compare() == false);
+
+  return changes ? AApplication::TPhaseResult::OK : AApplication::TPhaseResult::NO_CHANGES;
   }
 
 bool TSerializableMap::WriteParsedHeaderInjectedFunctions()
   {
-  LOG_INFO("GENERATING " << InjectedFunctionsFileName << " ...")
-
   if (CodeGenerator.Open(InjectedFunctionsFileName.generic_string().c_str(),
       "Defines member functions injected into serializable objects") == false)
     {
@@ -94,8 +105,6 @@ bool TSerializableMap::WriteParsedHeaderTypeIds()
     if (_class->IsAbstract() == false && _class->IsPartOfHierarchy())
       _class->SetTypeId(TypeIdCounter++);
     }
-
-  LOG_INFO("GENERATING " << ParsedHeaderTypeIdsFileName << " ...")
 
   if (CodeGenerator.Open(ParsedHeaderTypeIdsFileName.generic_string().c_str(),
       "Defines type ids for classes serializable via a pointer (Note: could be directly added to injected file)") == false)

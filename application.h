@@ -30,6 +30,13 @@ class AApplication
     typedef boost::program_options::variables_map variables_map;
     typedef boost::filesystem::path path;
 
+    enum class TPhaseResult : char
+      {
+      OK,
+      NO_CHANGES,
+      ERROR
+      };
+
   public:
     /** Main method. Returns 0 if success, or negative value if failed:
         -1 for Initialize
@@ -48,10 +55,10 @@ class AApplication
     virtual const char* GetXmlRootName() const = 0;
 
     /// Preprocess file with main compiler.
-    virtual bool Preprocess();
+    virtual TPhaseResult Preprocess(bool check_for_changes);
 
     /// Generate xml from input file use external tool (gccxml, castxml etc.).
-    virtual bool GenerateXML();
+    virtual TPhaseResult GenerateXML(bool check_for_changes);
 
     /// Prepare cmd line for xml-generator.
     virtual std::string ComposeXmlGeneratorCmdLine() = 0;
@@ -62,7 +69,7 @@ class AApplication
     virtual bool ParseXML();
 
     /// Generate final code for serialization.
-    virtual bool GenerateSerializationCode(const variables_map& args);
+    virtual TPhaseResult GenerateSerializationCode(const variables_map& args);
 
     static bool SelfRegister(const std::string& name, TApplicationsFactory::TCreateApplication creator);
 

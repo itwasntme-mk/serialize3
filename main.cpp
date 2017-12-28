@@ -32,6 +32,10 @@ int main(int argc, const char *argv[])
       ("verbose", "Verbose mode.")
       ("indent", bpo::value<int>()->default_value(2), "Indentation in generated code. Default is 2.")
       ("ignore-namespace", bpo::value<std::vector<std::string>>(), "Ignore enum types from namespace.")
+      ("stop-when-no-changes", bpo::value<std::string>(), "Stop when no changes after one of phases: "
+                                                          "preprocess - file after preprocessing is the same, "
+                                                          "xml - generated xml is the same, "
+                                                          "cpp - generating output files are the same.")
       ("input", bpo::value<std::vector<path>>()->required(), "Input file(s).")
       ;
 
