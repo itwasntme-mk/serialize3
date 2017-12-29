@@ -45,8 +45,8 @@ operator&(ASerializeDumper& dumper, const TType& o)
   o.Dump(dumper);
   }
 
-// Enum types
 #if !defined(GENERATE_ENUM_OPERATORS)
+// Enum types
 template <typename TType>
 typename std::enable_if<std::is_enum<TType>::value>::type
 operator&(ASerializeDumper& dumper, const TType& o)

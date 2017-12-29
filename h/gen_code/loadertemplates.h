@@ -25,12 +25,17 @@
 //    void TType::Dump(ASerializeDumper& dumper);
 //    void TType::Load(ASerializeDumper& loader);
 template <class TType>
+#if defined(GENERATE_ENUM_OPERATORS)
+void
+#else
 typename std::enable_if<std::is_enum<TType>::value == false>::type
+#endif
 operator&(ASerializeLoader& loader, TType& o)
   {
   o.Load(loader);
   }
 
+#if !defined(GENERATE_ENUM_OPERATORS)
 // Enum types
 template <typename TType>
 typename std::enable_if<std::is_enum<TType>::value>::type
@@ -46,6 +51,7 @@ operator&(ASerializeLoader& loader, TType& o)
     default:;
     }
   }
+#endif
 
 //-------------- load primitive types
   
