@@ -14,22 +14,30 @@ LIST(APPEND BOOST_COMPONENTS system
                              iostreams)
 FIND_PACKAGE(Boost 1.58 REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-include_directories(SYSTEM "./")
+include_directories(SYSTEM "../")
                              
 project (serialize3)
-add_executable( serialize3
-                main.cpp
-                application.cpp
-                apps_factory.cpp
-                castxml_app.cpp
-                castxml-gccxml_app.cpp
-                gccxml_app.cpp
-                codegenerator.cpp
-                external_app_launcher.cpp
-                serializablemap.cpp
-                xml_element.cpp
-                xml_reader_boost_property_tree.cpp
-                file_comparator.cpp )
+
+SET(FILE_LIST)
+LIST(APPEND FILE_LIST
+     main.cpp
+     application.cpp
+     apps_factory.cpp
+     castxml_app.cpp
+     castxml-gccxml_app.cpp
+     gccxml_app.cpp
+     codegenerator.cpp
+     external_app_launcher.cpp
+     serializablemap.cpp
+     xml_element.cpp
+     xml_reader_boost_property_tree.cpp
+     file_comparator.cpp)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  LIST(APPEND FILE_LIST test1_injected.cpp)
+endif()
+
+add_executable( serialize3 ${FILE_LIST})
 target_link_libraries(serialize3 ${Boost_LIBRARIES})
 
 message(status "** Boost Include: ${Boost_INCLUDE_DIR}")

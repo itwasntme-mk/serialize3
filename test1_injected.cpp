@@ -5,7 +5,7 @@
 #include "test1.hpp"
 #include <serialize3/h/gen_code/dumpertemplates.h>
 #include <serialize3/h/gen_code/loadertemplates.h>
-#include "test1_typeids__temporary_internal_file.hpp"
+#include "test1_typeids.hpp"
 #ifndef REGISTER_OBJECT
   #define REGISTER_OBJECT(_class_,_ptr_)
 #endif
@@ -13,16 +13,6 @@
   #define WRAP(...) __VA_ARGS__
 #endif
 
-inline void operator&(ASerializeDumper& dumper, const idtype_t& o) { dumper.Dump((const unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, idtype_t& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const _LIB_VERSION_TYPE& o) { dumper.Dump((const unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, _LIB_VERSION_TYPE& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const TEnumType& o) { dumper.Dump((const unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, TEnumType& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const xtd::TEnumType& o) { dumper.Dump((const unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, xtd::TEnumType& o) { loader.Load((unsigned int&)o); }
-inline void operator&(ASerializeDumper& dumper, const xtd::TMyClass::TEnumType& o) { dumper.Dump((const unsigned int&)o); }
-inline void operator&(ASerializeLoader& loader, xtd::TMyClass::TEnumType& o) { loader.Load((unsigned int&)o); }
 
 namespace xtd
 {

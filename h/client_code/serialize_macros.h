@@ -4,7 +4,7 @@ class ASerializeDumper;
 class ASerializeLoader;
 
 /// Storage type used for each non-abstract class type-id.
-typedef unsigned int TTypeId;
+typedef int TTypeId;
 
 // Macro to be used when nonpublic inheritance is needed for serializable class
 // it is redefined to public just for serializer generated code
