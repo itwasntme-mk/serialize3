@@ -47,14 +47,16 @@ class ABase
   {
   SERIALIZABLE
   protected:
-    int m1;
+    int m1 = 0;
     //int m2 : 3;
     int m3[3];
     int m4[3][4];
+    TEnumType m5 = VALUE1;
+    std::vector<TEnumType> m6;
 
     virtual bool test() = 0;
 
-    ABase() : m1(0) {}
+    ABase() = default;
   };
 
 class TMyClass : public ABase
@@ -84,9 +86,9 @@ class TMyClass : public ABase
     > M1;
 
     boost::multi_index::multi_index_container<
-      std::string,
+      TEnumType,
       boost::multi_index::indexed_by<
-        boost::multi_index::ordered_unique<boost::multi_index::identity<std::string>>
+        boost::multi_index::ordered_unique<boost::multi_index::identity<TEnumType>>
       >
     > M2;
 

@@ -31,13 +31,30 @@ const TTypeId NULL_TYPE_ID = 0;
 //Catchall for any object type not overloaded.
 //This redirects to the object itself for dumping. "Normal"
 //class dumps go through this operator.
-//  TSerializable expects contract of:
-//    void TSerializable::Dump(ASerializeDumper& dumper);
-//    void TSerializable::Load(ASerializeDumper& loader);
-template <class TSerializable>
-void operator&(ASerializeDumper& dumper, const TSerializable& o)
+//  TType expects contract of:
+//    void TType::Dump(ASerializeDumper& dumper);
+//    void TType::Load(ASerializeDumper& loader);
+template <class TType>
+typename std::enable_if<std::is_enum<TType>::value == false>::type
+operator&(ASerializeDumper& dumper, const TType& o)
   {
   o.Dump(dumper);
+  }
+
+// Enum types
+template <typename TType>
+typename std::enable_if<std::is_enum<TType>::value>::type
+operator&(ASerializeDumper& dumper, const TType& o)
+  {
+  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
+  switch (sizeof(TType))
+    {
+    case 8:  dumper.Dump((const unsigned char&)o); break;
+    case 16: dumper.Dump((const unsigned short&)o); break;
+    case 32: dumper.Dump((const unsigned int&)o); break;
+    case 64: dumper.Dump((const unsigned long long&)o); break;
+    default:;
+    }
   }
 
 //--------------- dump primitive types
@@ -107,22 +124,6 @@ inline
 void operator&(ASerializeDumper& dumper, const double& o)
   {
   dumper.Dump(o);
-  }
-
-// Enum types
-template <typename TType>
-typename std::enable_if<std::is_enum<TType>::value>::type
-operator&(ASerializeDumper& dumper, const TType& o)
-  {
-  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
-  switch (sizeof(TType))
-    {
-    case 8:  dumper.Dump((const unsigned char&)o); break;
-    case 16: dumper.Dump((const unsigned short&)o); break;
-    case 32: dumper.Dump((const unsigned int&)o); break;
-    case 64: dumper.Dump((const unsigned long long&)o); break;
-    default:;
-    }
   }
 
 //--------------- dump stl types

@@ -21,13 +21,30 @@
 //Catchall for any object type not overloaded.
 //This redirects to the object itself for loading. "Normal"
 //class loads go through this operator.
-//  TSerializable expects contract of:
-//    void TSerializable::Dump(ASerializeDumper& dumper);
-//    void TSerializable::Load(ASerializeDumper& loader);
-template <class TSerializable>
-void operator&(ASerializeLoader& loader, TSerializable& o)
+//  TType expects contract of:
+//    void TType::Dump(ASerializeDumper& dumper);
+//    void TType::Load(ASerializeDumper& loader);
+template <class TType>
+typename std::enable_if<std::is_enum<TType>::value == false>::type
+operator&(ASerializeLoader& loader, TType& o)
   {
   o.Load(loader);
+  }
+
+// Enum types
+template <typename TType>
+typename std::enable_if<std::is_enum<TType>::value>::type
+operator&(ASerializeLoader& loader, TType& o)
+  {
+  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
+  switch (sizeof(TType))
+    {
+    case 8:  loader.Load((unsigned char&)o); break;
+    case 16: loader.Load((unsigned short&)o); break;
+    case 32: loader.Load((unsigned int&)o); break;
+    case 64: loader.Load((unsigned long long&)o); break;
+    default:;
+    }
   }
 
 //-------------- load primitive types
@@ -96,22 +113,6 @@ inline
 void operator&(ASerializeLoader& loader, double& o)
   {
   loader.Load(o);
-  }
-
-// Enum types
-template <typename TType>
-typename std::enable_if<std::is_enum<TType>::value>::type
-operator&(ASerializeLoader& loader, TType& o)
-  {
-  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
-  switch (sizeof(TType))
-    {
-    case 8:  loader.Load((unsigned char&)o); break;
-    case 16: loader.Load((unsigned short&)o); break;
-    case 32: loader.Load((unsigned int&)o); break;
-    case 64: loader.Load((unsigned long long&)o); break;
-    default:;
-    }
   }
 
 //--------------- load stl types
