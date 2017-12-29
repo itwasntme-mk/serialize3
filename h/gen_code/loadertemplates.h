@@ -16,6 +16,8 @@
 #include <serialize3/h/gen_code/serializable_boost_cntrs_includes.h>
 #endif // #if defined(SERIALIZABLE_BOOST_CONTAINERS)
 
+#include <type_traits>
+
 //Catchall for any object type not overloaded.
 //This redirects to the object itself for loading. "Normal"
 //class loads go through this operator.
@@ -94,6 +96,22 @@ inline
 void operator&(ASerializeLoader& loader, double& o)
   {
   loader.Load(o);
+  }
+
+// Enum types
+template <typename TType>
+typename std::enable_if<std::is_enum<TType>::value>::type
+operator&(ASerializeLoader& loader, TType& o)
+  {
+  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
+  switch (sizeof(TType))
+    {
+    case 8:  loader.Load((unsigned char&)o); break;
+    case 16: loader.Load((unsigned short&)o); break;
+    case 32: loader.Load((unsigned int&)o); break;
+    case 64: loader.Load((unsigned long long&)o); break;
+    default:;
+    }
   }
 
 //--------------- load stl types
@@ -407,10 +425,15 @@ template <typename... TArgs>
 struct has_reservable_size<bmi::random_access<TArgs...>> : public std::true_type {};
 
 template <typename TMultiIndexContainer>
+struct has_first_index_reservable_size
+  : public has_reservable_size<
+      typename boost::mpl::front<
+        typename TMultiIndexContainer::index_specifier_type_list>::type> {};
+
+template <typename TMultiIndexContainer>
 void Reserve(TMultiIndexContainer& c, size_t size, std::true_type has_reserve)
   {
-  auto& index = c.get<0>();
-  index.reserve(index.size() + size)
+  c.reserve(c.size() + size);
   }
 
 template <typename TMultiIndexContainer>
@@ -422,13 +445,12 @@ void Load(ASerializeLoader& loader, TMultiIndexContainer& c, std::true_type is_s
   size_t size;
   loader.LoadSizeT(size);
   typedef typename TMultiIndexContainer::value_type Value;
-  auto& index = c.get<0>();
-  Reserve(c, size, has_reservable_size<decltype(index)>());
+  Reserve(c, size, has_first_index_reservable_size<TMultiIndexContainer>());
   for (size_t i = 0; i < size; ++i)
     {
     Value value;
     loader & value;
-    index.emplace_back(std::move(value));
+    c.emplace_back(std::move(value));
     }
   }
 
@@ -438,14 +460,13 @@ void Load(ASerializeLoader& loader, TMultiIndexContainer& c, std::false_type is_
   size_t size;
   loader.LoadSizeT(size);
   typedef typename TMultiIndexContainer::value_type Value;
-  auto& index = c.get<0>();
-  if (index.empty())
+  if (c.empty())
     {
     for (size_t i = 0; i < size; ++i)
       {
       Value value;
       loader & value;
-      index.emplace_hint(index.end(), std::move(value));
+      c.emplace_hint(c.end(), std::move(value));
       }
     }
   else
@@ -454,7 +475,7 @@ void Load(ASerializeLoader& loader, TMultiIndexContainer& c, std::false_type is_
       {
       Value value;
       loader & value;
-      index.emplace(std::move(value));
+      c.emplace(std::move(value));
       }
     }
   }

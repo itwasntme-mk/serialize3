@@ -24,6 +24,7 @@
 #include <serialize3/h/gen_code/serializable_boost_cntrs_includes.h>
 #endif // #if defined(SERIALIZABLE_BOOST_CONTAINERS)
 
+#include <type_traits>
 
 const TTypeId NULL_TYPE_ID = 0;
 
@@ -106,6 +107,22 @@ inline
 void operator&(ASerializeDumper& dumper, const double& o)
   {
   dumper.Dump(o);
+  }
+
+// Enum types
+template <typename TType>
+typename std::enable_if<std::is_enum<TType>::value>::type
+operator&(ASerializeDumper& dumper, const TType& o)
+  {
+  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
+  switch (sizeof(TType))
+    {
+    case 8:  dumper.Dump((const unsigned char&)o); break;
+    case 16: dumper.Dump((const unsigned short&)o); break;
+    case 32: dumper.Dump((const unsigned int&)o); break;
+    case 64: dumper.Dump((const unsigned long long&)o); break;
+    default:;
+    }
   }
 
 //--------------- dump stl types
