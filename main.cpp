@@ -33,10 +33,9 @@ int main(int argc, const char *argv[])
       ("quiet", "Quiet mode.")
       ("verbose", "Verbose mode.")
       ("indent", bpo::value<int>()->default_value(2), "Indentation in generated code. Default is 2.")
-      ("ignore-namespace", bpo::value<std::vector<std::string>>(), "Ignore enum types from namespace.")
-      ("stop-when-no-changes", bpo::value<std::string>(), "Stop when no changes after one of phases: "
-                                                          "preprocess - file after preprocessing is the same, "
-                                                          "xml - generated xml is the same, "
+      ("stop-when-no-changes", bpo::value<std::string>(), "Stop when no changes after one of phases:\n"
+                                                          "preprocess - file after preprocessing is the same,\n"
+                                                          "xml - generated xml is the same,\n"
                                                           "cpp - generating output files are the same.")
       ("input", bpo::value<std::vector<path>>()->required(), "Input file(s).")
       ;
@@ -61,7 +60,7 @@ int main(int argc, const char *argv[])
       const TApplicationsFactory* appsFactory = TApplicationsFactory::GetInstance();
       std::unique_ptr<AApplication> app(appsFactory->CreateApplication(xml_creator));
 
-      if (app == false)
+      if (!app)
         throw bpo::error(std::string("Not supported xml creator: ") + xml_creator);
 
       int result = app->Run(vm);

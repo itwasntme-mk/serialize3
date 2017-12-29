@@ -24,7 +24,7 @@ class TSerializableMap
   public:
     TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
       const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-      const std::vector<std::string>& ignoredNamespaces, int indent, bool check_for_changes);
+      int indent, bool check_for_changes);
 
     AApplication::TPhaseResult Generate();
 
@@ -34,7 +34,9 @@ class TSerializableMap
 
     void WriteTypeIdDeclaration(const TClass& _class);
 
+#if defined(GENERATE_ENUM_OPERATORS)
     void WriteOperatorsForEnums();
+#endif
 
     void WriteOperatorsForStruct(const TClass& _class);
 
@@ -84,9 +86,6 @@ class TSerializableMap
   
     //input file names
     const std::vector<path>& Inputs; 
-  
-    //ignored namespaces
-    const std::vector<std::string>& IgnoredNamespaces;
   
     //output file names
     path                ParsedHeaderTypeIdsFileName;

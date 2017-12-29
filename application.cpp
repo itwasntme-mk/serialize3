@@ -379,7 +379,9 @@ bool AApplication::ParseXML()
 
     if (name.empty() || name.compare(0, 2, "$_", 2) == 0)
       {
-      LOG_VERBOSE("Unnamed Enum skipped (id: " << wrapper.GetIdStr() << ")");
+#if defined(GENERATE_ENUM_OPERATORS)
+    LOG_VERBOSE("Unnamed Enum skipped (id: " << wrapper.GetIdStr() << ")");
+#endif
       return;
       }
 
@@ -670,15 +672,11 @@ bool AApplication::ParseXML()
 
 AApplication::TPhaseResult AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
   {
-  std::vector<std::string> ignoredNamespaces;
-  bool check_for_changes = (args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "xml");
+  bool check_for_changes =
+    (args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "cpp");
 
-  if (args.count("ignore-namespace"))
-    ignoredNamespaces = args["ignore-namespace"].as<std::vector<std::string>>();
-
-  TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles,
-    WorkingDir, OutputFilePrefix, ignoredNamespaces, args["indent"].as<int>(),
-    args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "cpp");
+  TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles, WorkingDir,
+    OutputFilePrefix, args["indent"].as<int>(), check_for_changes);
 
   return serializableMap.Generate();
   }

@@ -19,10 +19,10 @@ namespace bfs = boost::filesystem;
 
 TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
   const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
-  const std::vector<std::string>& ignoredNamespaces, int indent, bool check_for_changes)
+  int indent, bool check_for_changes)
   : Classes(classes), Enums(enums), Logger(logger), CheckForChanges(check_for_changes),
-    CodeGenerator(logger, Indent), Inputs(inputs), IgnoredNamespaces(ignoredNamespaces),
-    Indent(indent, ' '), Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
+    CodeGenerator(logger, Indent), Inputs(inputs), Indent(indent, ' '),
+    Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
   {
   ParsedHeaderTypeIdsFileName = working_dir / (output_prefix + "_typeids");
   ParsedHeaderTypeIdsFileName.replace_extension(".hpp");
@@ -79,8 +79,10 @@ bool TSerializableMap::WriteParsedHeaderInjectedFunctions()
   CodeGenerator.Out << Indent << "#define WRAP(...) __VA_ARGS__" << std::endl;
   CodeGenerator.Out << "#endif" << std::endl;
 
+#if defined(GENERATE_ENUM_OPERATORS)
   CodeGenerator.Out << std::endl;
   WriteOperatorsForEnums();
+#endif
 
   CodeGenerator.Out << std::endl;
   WriteFunctionsForClasses();
@@ -143,6 +145,7 @@ void TSerializableMap::WriteTypeIdDeclaration(const TClass& _class)
                     << _class.GetTypeId() << ';' << std::endl;
   }
 
+#if defined(GENERATE_ENUM_OPERATORS)
 void TSerializableMap::WriteOperatorsForEnums()
   {
   for (auto _enum : Enums)
@@ -153,15 +156,6 @@ void TSerializableMap::WriteOperatorsForEnums()
       {
       LOG_VERBOSE("Enum with non-public access: " << enumName);
       continue;
-      }
-
-    for (auto& ignoredNamespace : IgnoredNamespaces)
-      {
-      if (enumName.compare(0, ignoredNamespace.length(), ignoredNamespace) == 0)
-        {
-        _enum = nullptr;
-        break;
-        }
       }
 
     if (_enum == nullptr)
@@ -211,6 +205,7 @@ void TSerializableMap::WriteOperatorsForEnums()
                       << enumName << "& o) { loader.Load(" << loadEnumTypeCast << "o); }" << std::endl;
     }
   }
+#endif // #if defined(GENERATE_ENUM_OPERATORS)
 
 void TSerializableMap::WriteOperatorsForStruct(const TClass& _class)
   {
@@ -644,8 +639,6 @@ std::string TSerializableMap::GetTypeEnumCast(const TEnum& _enum, bool dump)
       result += "unsigned int&)"; break;
     case 64:
       result += "unsigned long long&)"; break;
-    case 128:
-      result += "std::pair<unsigned long long, unsigned long long>&)"; break;
     default:
       LOG_ERROR("too big Enum " << _enum.GetName() << " sizeof: " << _enum.GetSizeof());
       ++Errors;
