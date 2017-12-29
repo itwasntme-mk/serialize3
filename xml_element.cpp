@@ -77,8 +77,8 @@ const boost::multi_index::TTagType2ElemKind TagType2ElemKind =
 
 } // namespace
 
-AXmlElement::AXmlElement(const std::string& name, TTagType tagKind)
-  : Name(name)
+AXmlElement::AXmlElement(const std::string& name, const std::string& id, TTagType tagKind)
+  : Name(name), Id(id)
   {
   auto& index = TagType2ElemKind.get<by_tag>();
   auto found = index.find(tagKind);

@@ -24,6 +24,7 @@ class AXmlElement
       TypeUnion,
       TypeFundamental,
       Typedef,
+      TypeElaborated,
       TypePointer,
       TypeReference,
       TypeArray,
@@ -41,6 +42,8 @@ class AXmlElement
     const AXmlElement* GetParent() const { return Parent; }
 
     const std::string& GetName() const { return Name; }
+
+    const std::string& GetId() const { return Id; }
 
     std::string GetFullName() const
       {
@@ -61,11 +64,12 @@ class AXmlElement
     bool IsPublicAccess() const { return PublicAccess != 0; }
 
   protected:
-    AXmlElement(const std::string& name, TTagType tagKind);
+    AXmlElement(const std::string& name, const std::string& id, TTagType tagKind);
     ~AXmlElement() {}
 
   protected:
     std::string         Name;
+    const std::string&  Id;
     const AXmlElement*  Parent = nullptr;
     TElemKind           ElemKind = TypeUnknown;
     unsigned char       Const = false;
@@ -77,7 +81,7 @@ class AXmlElement
 class TNamespace final : public AXmlElement
   {
   public:
-    TNamespace(const std::string& name) : AXmlElement(name, TAG_NAMESPACE) {}
+    TNamespace(const std::string& name, const std::string& id) : AXmlElement(name, id, TAG_NAMESPACE) {}
   };
 
 class TType : public AXmlElement
@@ -86,9 +90,11 @@ class TType : public AXmlElement
     typedef AXmlElement::TElemKind TTypeKind;
 
   public:
-    TType(const std::string& name, TTagType typeKind, bool publicAccess)
-      : AXmlElement(name, typeKind)
-      { PublicAccess = publicAccess; }
+    TType(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof)
+      : AXmlElement(name, id, typeKind), Sizeof(_sizeof)
+      {
+      PublicAccess = publicAccess;
+      }
 
     TTypeKind GetTypeKind() const { return ElemKind; }
 
@@ -100,41 +106,36 @@ class TType : public AXmlElement
 
     bool IsConst() const { return Const != 0; }
 
+    int GetSizeof() const { return Sizeof; }
+
   protected:
     const TType*  Type = nullptr; // could be null if fundamental type
+    int           Sizeof = 0;
   };
 
 class TEnum final : public TType
   {
   public:
-    TEnum(const std::string& name, TTagType typeKind, bool publicAccess, size_t _sizeof)
-      : TType(name, typeKind, publicAccess), Sizeof(_sizeof) {}
-
-    size_t GetSizeof() const { return Sizeof; }
-
-  private:
-    size_t  Sizeof = 0;
+    TEnum(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof)
+      : TType(name, id, typeKind, publicAccess, _sizeof) {}
   };
 
 class TArrayType final : public TType
   {
   public:
-    TArrayType(const std::string& name, TTagType typeKind, bool publicAccess, int size)
-      : TType(name, typeKind, publicAccess), Size(size) {}
+    TArrayType(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int size)
+      : TType(name, id, typeKind, publicAccess, size) {}
 
-    int GetSize() const { return Size; }
+    int GetSize() const { return GetSizeof(); }
 
     const TType* GetElemType() const { return GetPointedType(); }
-
-  private:
-    int   Size = 0;
   };
 
 class TClassMember final : public AXmlElement
   {
   public:
-    explicit TClassMember(const std::string& name, bool publicAccess, int bitfield)
-      : AXmlElement(name, TAG_FIELD), Bitfield(bitfield)
+    explicit TClassMember(const std::string& name, const std::string& id, bool publicAccess, int bitfield)
+      : AXmlElement(name, id, TAG_FIELD), Bitfield(bitfield)
       { PublicAccess = publicAccess; }
 
     void SetType(const TType* _type) { Type = _type; }
@@ -151,8 +152,8 @@ class TClassMember final : public AXmlElement
 class TClass final : public TType
   {
   public:
-    TClass(const std::string& name, TTagType typeKind, bool publicAccess, int bases, int members)
-      : TType(name, typeKind, publicAccess)
+    TClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int bases, int members)
+      : TType(name, id, typeKind, publicAccess, 0)
       {
       Bases.reserve(bases);
       Members.reserve(members);
@@ -248,45 +249,45 @@ class TXmlElementsFactory final
   public:
     static TXmlElementsFactory* GetInstance();
 
-    TNamespace* CreateNamespace(const std::string& name)
+    TNamespace* CreateNamespace(const std::string& name, const std::string& id)
       {
-      TNamespace* result = new TNamespace(name);
+      TNamespace* result = new TNamespace(name, id);
       Elements.push_front(result);
       return result;
       }
 
-    TClass* CreateClass(const std::string& name, TTagType typeKind, bool publicAccess, int bases,
+    TClass* CreateClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int bases,
                         int members)
       {
-      TClass* result = new TClass(name, typeKind, publicAccess, bases, members);
+      TClass* result = new TClass(name, id, typeKind, publicAccess, bases, members);
       Elements.push_front(result);
       return result;
       }
 
-    TType* CreateType(const std::string& name, TTagType typeKind, bool publicAccess)
+    TType* CreateType(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof)
       {
-      TType* result = new TType(name, typeKind, publicAccess);
+      TType* result = new TType(name, id, typeKind, publicAccess, _sizeof);
       Elements.push_front(result);
       return result;
       }
 
-    TEnum* CreateEnum(const std::string& name, TTagType typeKind, bool publicAccess, size_t _sizeof)
+    TEnum* CreateEnum(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof)
       {
-      TEnum* result = new TEnum(name, typeKind, publicAccess, _sizeof);
+      TEnum* result = new TEnum(name, id, typeKind, publicAccess, _sizeof);
       Elements.push_front(result);
       return result;
       }
 
-    TArrayType* CreateArrayType(const std::string& name, TTagType typeKind, bool publicAccess, int size)
+    TArrayType* CreateArrayType(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int size)
       {
-      TArrayType* result = new TArrayType(name, typeKind, publicAccess, size);
+      TArrayType* result = new TArrayType(name, id, typeKind, publicAccess, size);
       Elements.push_front(result);
       return result;
       }
 
-    TClassMember* CreateClassMember(const std::string& name, bool publicAccess, int bitfield)
+    TClassMember* CreateClassMember(const std::string& name, const std::string& id, bool publicAccess, int bitfield)
       {
-      TClassMember* result = new TClassMember(name, publicAccess, bitfield);
+      TClassMember* result = new TClassMember(name, id, publicAccess, bitfield);
       Elements.push_front(result);
       return result;
       }

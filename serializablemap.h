@@ -67,7 +67,9 @@ class TSerializableMap
     void HandleArray(std::ofstream& out, std::string& indent, std::string iterator,
                      std::string& reference, const TArrayType& arrayType);
 
+#if defined(GENERATE_ENUM_OPERATORS)
     std::string GetTypeEnumCast(const TEnum& _enum, bool dump);
+#endif
 
     void OpenNamespaces(TNamespaces&& namespaces);
     void CloseNamespaces();

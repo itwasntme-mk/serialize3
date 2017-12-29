@@ -13,7 +13,6 @@
   #define WRAP(...) __VA_ARGS__
 #endif
 
-
 namespace xtd
 {
 void* ABase::BuildForSerializer() { return 0; }
@@ -106,7 +105,7 @@ void TMyClass::Dump(ASerializeDumper& dumper) const
   DPUSH_INDENT;
   DLOGMSG("Dump xtd::TMyClass");
   dumper & static_cast<const xtd::ABase&>(*this);
-  dumper & (const unsigned int&)mm1;
+  dumper & mm1;
   dumper & M1;
   dumper & M2;
   dumper & M3;
@@ -118,7 +117,7 @@ void TMyClass::Load(ASerializeLoader& loader)
   LPUSH_INDENT;
   LLOGMSG("Load xtd::TMyClass");
   loader & static_cast<xtd::ABase&>(*this);
-  loader & (unsigned int&)mm1;
+  loader & mm1;
   loader & M1;
   loader & M2;
   loader & M3;

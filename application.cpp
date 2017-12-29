@@ -348,7 +348,7 @@ bool AApplication::ParseXML()
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
     int bitfield = wrapper.IsBitfield();
-    TClassMember* member = xmlElementsFactory->CreateClassMember(name, publicAccess, bitfield);
+    TClassMember* member = xmlElementsFactory->CreateClassMember(name, wrapper.GetIdStr(), publicAccess, bitfield);
     member->SetParent(elements[context]);
     static_cast<TClass*>(elements[context])->AddMember(member);
 
@@ -365,7 +365,7 @@ bool AApplication::ParseXML()
 
     int id = wrapper.GetId();
     int context = wrapper.GetContextId();
-    TNamespace* _namespace = xmlElementsFactory->CreateNamespace(name);
+    TNamespace* _namespace = xmlElementsFactory->CreateNamespace(name, wrapper.GetIdStr());
     if (context >= 0)
       _namespace->SetParent(elements[context]);
 
@@ -389,7 +389,8 @@ bool AApplication::ParseXML()
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
-    TEnum* _enum = xmlElementsFactory->CreateEnum(name, tag, publicAccess, _sizeof);
+    TEnum* _enum = xmlElementsFactory->CreateEnum(name, wrapper.GetIdStr(), tag, publicAccess,
+                                                  _sizeof);
     _enum->SetParent(elements[context]);
 
     //if (wrapper.IsPublicAccess() == false)
@@ -415,8 +416,8 @@ bool AApplication::ParseXML()
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
-    TClass* _class = xmlElementsFactory->CreateClass(name, tag, publicAccess, bases.size(),
-                                                     members.size());
+    TClass* _class = xmlElementsFactory->CreateClass(name, wrapper.GetIdStr(), tag, publicAccess,
+                                                     bases.size(), members.size());
 
     elements[id] = _class;
     classes.push_back(_class);
@@ -458,9 +459,10 @@ bool AApplication::ParseXML()
     bool _const = wrapper.IsConst();
     TType* _type = nullptr;
     bool publicAccess = wrapper.IsPublicAccess();
+    int _sizeof = wrapper.GetSizeof();
 
     if (tag != TAG_ARRAY_TYPE)
-      _type = xmlElementsFactory->CreateType(name, tag, publicAccess);
+      _type = xmlElementsFactory->CreateType(name, wrapper.GetIdStr(), tag, publicAccess, _sizeof);
     else
       {
       int _min, _max;
@@ -470,7 +472,7 @@ bool AApplication::ParseXML()
         return;
         }
       int size = _min > _max ? 0 : _max - _min + 1;
-      _type = xmlElementsFactory->CreateArrayType(name, tag, publicAccess, size);
+      _type = xmlElementsFactory->CreateArrayType(name, wrapper.GetIdStr(), tag, publicAccess, size);
       }
 
     int context = wrapper.GetContextId();
@@ -509,6 +511,7 @@ bool AApplication::ParseXML()
       { TAG_POINTER_TYPE, handle_type },
       { TAG_REFERENCE_TYPE, handle_type },
       { TAG_CV_QUALIFIED_TYPE, handle_type },
+      { TAG_ELABORATED_TYPE, handle_type },
       { TAG_METHOD, handle_method }
     };
 
@@ -556,7 +559,7 @@ bool AApplication::ParseXML()
     if (type1 == nullptr || type2->GetTypeKind() == TType::TypeArray)
       continue;
 
-    while (type1 && type1->GetTypeKind() == TType::Typedef)
+    while (type1 && (type1->GetTypeKind() == TType::Typedef || type1->GetTypeKind() == TType::TypeElaborated))
       type1 = const_cast<TType*>(type1->GetPointedType());
 
     elements[data.first] = type1;

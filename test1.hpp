@@ -1,7 +1,7 @@
 #include "vpi_api.h"
 
 /// On unix, OWNER_API must be always defined to some export symbol 
-#ifdef UNIX
+#if defined(UNIX) || defined(__linux__)
   #define OWNER_API VPI_API
 #else
   #define OWNER_API 

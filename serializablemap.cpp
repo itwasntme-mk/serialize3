@@ -234,22 +234,32 @@ bool TSerializableMap::AnalyzeMembers(const TClass& _class)
     {
     const TType* type = member.GetType();
 
-    if (member.IsBitfield())
-      LOG_WARNING("bitfield member serialized: " << member.GetFullName());
-
+start_type_check:
     if (type == nullptr)
       {
-      //LOG_ERROR("cannot serialize member of unkown type: " << member.GetFullName());
-      //++Errors;
-      LOG_WARNING("member of unkown type: " << member.GetFullName());
+      LOG_ERROR("cannot serialize member: "
+                << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                << " of unknown type");
+      ++Errors;
+      //LOG_WARNING("member: "
+      //            << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+      //            << " of unknown type");
       return;
       }
 
     if (type->IsConst())
       {
-      LOG_ERROR("cannot serialize const member: " << member.GetFullName());
+      LOG_ERROR("cannot serialize const member: "
+                << (member.GetName().empty() ? member.GetId() : member.GetFullName()));
       ++Errors;
       return;
+      }
+
+    if (member.IsBitfield())
+      {
+      LOG_WARNING("bitfield member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                  << " serialized");
       }
 
     switch (type->GetTypeKind())
@@ -258,6 +268,14 @@ bool TSerializableMap::AnalyzeMembers(const TClass& _class)
       case TType::TypeStruct:
         {
         const TClass* _class = static_cast<const TClass*>(type);
+
+        if (_class->IsSerializable() != TYPE_NOT_MARKED && _class->GetName().empty())
+          {
+          LOG_ERROR("cannot serialize member: "
+                    << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                    << " of non-serializable unnamed class/struct type")
+          ++Errors;
+          }
 
         // It can be TPtrWrapper<CLASS>, so we cannot log error here
         /*if (_class->IsSerializable() == TYPE_NOT_MARKED)
@@ -275,35 +293,50 @@ bool TSerializableMap::AnalyzeMembers(const TClass& _class)
         break;
 
       case TType::TypeUnion:
-        LOG_ERROR("cannot serialize member of union type: " << member.GetFullName());
+        LOG_ERROR("cannot serialize member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                  << " of union type");
         ++Errors;
         break;
 
       case TType::TypeEnum:
       case TType::TypeFundamental:
+        break;
+
       case TType::TypeArray:
+        type = static_cast<const TArrayType*>(type)->GetElemType();
         break;
 
       case TType::TypePointer:
-        LOG_ERROR("cannot serialize member of pointer type: " << member.GetFullName());
+        LOG_ERROR("cannot serialize member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                  << " of pointer type");
         ++Errors;
         break;
 
       case TType::TypeReference:
-        LOG_ERROR("cannot serialize member of reference type: " << member.GetFullName());
+        LOG_ERROR("cannot serialize member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                  << " of reference type");
         ++Errors;
         break;
 
       case TType::TypeCvQualified:
-        LOG_ERROR("cannot serialize const member: " << member.GetFullName());
+        LOG_ERROR("cannot serialize const member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName()));
         ++Errors;
         break;
 
       case TType::Typedef:
         throw std::runtime_error(std::string("Unexpected Typedef in ") + __FUNCTION__);
 
+      case TType::TypeElaborated:
+        throw std::runtime_error(std::string("Unexpected TypeElaborated in ") + __FUNCTION__);
+
       default:
-        LOG_ERROR("cannot serialize member of unknown type: " << member.GetFullName());
+        LOG_ERROR("cannot serialize member: "
+                  << (member.GetName().empty() ? member.GetId() : member.GetFullName())
+                  << " of unknown type");
         ++Errors;
         break;
       }
@@ -590,7 +623,6 @@ void TSerializableMap::WriteCall(const TClassMember& member)
   std::string reference(member.GetName());
   bool generated = false;
   const char* dumper_loader = DUMP_CALL ? "dumper & " : "loader & ";
-  std::string enumTypeCast;
 
   if (type)
     {
@@ -604,26 +636,22 @@ void TSerializableMap::WriteCall(const TClassMember& member)
       HandleArray(out, indent, iterator, reference, *arrayType);
       }
 
-    if (typeKind == TType::TypeEnum)
-      enumTypeCast = GetTypeEnumCast(static_cast<const TEnum&>(*type), DUMP_CALL);
-    else if (DUMP_CALL == false && member.IsBitfield())
+    if (DUMP_CALL == false && member.IsBitfield())
       {
       out << indent << '{' << std::endl;
       out << indent << type->GetFullName() << " dummy;" << std::endl;
       out << indent << "loader & dummy;" << std::endl;
       out << indent << reference << " = dummy;" << std::endl;
       out << indent << '}' << std::endl;
-      generated = true;
+      return;
       }
     }
 
-  if (generated == false)
-    {
-    // class, struct, enum, fundamental
-    out << indent << dumper_loader << enumTypeCast << reference << ";" << std::endl;
-    }
+  // class, struct, enum, fundamental
+  out << indent << dumper_loader << reference << ";" << std::endl;
   }
 
+#if defined(GENERATE_ENUM_OPERATORS)
 std::string TSerializableMap::GetTypeEnumCast(const TEnum& _enum, bool dump)
   {
   std::string result(dump ? "(const " : "(");
@@ -648,6 +676,7 @@ std::string TSerializableMap::GetTypeEnumCast(const TEnum& _enum, bool dump)
 
   return std::move(result);
   }
+#endif // #if defined(GENERATE_ENUM_OPERATORS)
 
 void TSerializableMap::OpenNamespaces(TNamespaces&& namespaces)
   {

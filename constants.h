@@ -19,6 +19,7 @@ const char TAG_REFERENCE_TYPE[] = "ReferenceType";
 const char TAG_ARRAY_TYPE[] = "ArrayType";
 const char TAG_ENUM_TYPE[] = "Enumeration";
 const char TAG_CV_QUALIFIED_TYPE[] = "CvQualifiedType";
+const char TAG_ELABORATED_TYPE[] = "ElaboratedType";
 const char TAG_METHOD[] = "Method";
 const char TAG_BASE[] = "Base";
 

@@ -100,6 +100,13 @@ class AXmlItemWrapper
       return id_str ? *id_str : EmptyString;
       }
 
+    // sizeof in bits for all types
+    int GetSizeof() const
+      {
+      const std::string& _sizeof = get_attr_value(ATTRIBUTE_SIZE);
+      return _sizeof.empty() ? 0 : std::stoi(_sizeof);
+      }
+
   protected:
     const std::string& get_attr_value(const char* attr_name) const
       {
@@ -136,13 +143,6 @@ class TEnumWrapper : public AXmlItemWrapper
   {
   public:
     explicit TEnumWrapper(const ptree::value_type& xmlItem) : AXmlItemWrapper(xmlItem) {}
-
-    // sizeof in bits
-    int GetSizeof() const
-      {
-      const std::string& _sizeof = get_attr_value(ATTRIBUTE_SIZE);
-      return _sizeof.empty() ? 0 : std::stoi(_sizeof);
-      }
   };
 
 class TNamespaceWrapper : public AXmlItemWrapper

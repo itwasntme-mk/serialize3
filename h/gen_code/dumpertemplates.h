@@ -35,13 +35,18 @@ const TTypeId NULL_TYPE_ID = 0;
 //    void TType::Dump(ASerializeDumper& dumper);
 //    void TType::Load(ASerializeDumper& loader);
 template <class TType>
+#if defined(GENERATE_ENUM_OPERATORS)
+void
+#else
 typename std::enable_if<std::is_enum<TType>::value == false>::type
+#endif
 operator&(ASerializeDumper& dumper, const TType& o)
   {
   o.Dump(dumper);
   }
 
 // Enum types
+#if !defined(GENERATE_ENUM_OPERATORS)
 template <typename TType>
 typename std::enable_if<std::is_enum<TType>::value>::type
 operator&(ASerializeDumper& dumper, const TType& o)
@@ -56,6 +61,7 @@ operator&(ASerializeDumper& dumper, const TType& o)
     default:;
     }
   }
+#endif
 
 //--------------- dump primitive types
 
