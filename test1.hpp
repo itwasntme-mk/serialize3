@@ -27,7 +27,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <string>
+#include <serialize3/h/gen_code/serializable_std_type_includes.h>
 
 enum TEnumType
   {

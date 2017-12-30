@@ -198,6 +198,7 @@ class TClass final : public TType
     bool IsBuildPointerNeeded() const { return (SerializeMethod & TYPE_BUILDPOINTER) == TYPE_BUILDPOINTER; }
     bool IsPointerSerializable() const { return (SerializeMethod & TYPE_SERIALIZE) != 0; }
     bool IsBuildForSerializerWithLoader() const { return (SerializeMethod & TYPE_BUILDPOINTER_W_LOADER) != 0; }
+    bool IsObjectSerializable() const { return (SerializeMethod & TYPE_OBJECT_SERIALIZE) != 0; }
 
     typedef std::function<void(const TClass&)> TConstClassHandler;
     typedef std::function<void(TClass&)> TNonConstClassHandler;

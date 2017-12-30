@@ -28,13 +28,93 @@ void* TClass::BuildForSerializer()
   REGISTER_OBJECT((WRAP(TClass)), ptr);
   return ptr;
   }
+void ABase::Dump(ASerializeDumper& dumper) const
+  {
+  DPUSH_INDENT;
+  DLOGMSG("Dump itd::ABase");
+  dumper & m1;
+  dumper & m2;
+  dumper & m3;
+  dumper & m4.m3;
+  dumper & m13;
+  dumper & m5.m1;
+  dumper & m5.m2;
+  dumper & m5.m3;
+  dumper & m21;
+  dumper & m22;
+  dumper & m23;
+  dumper & m7.m1;
+  dumper & m7.m2;
+  dumper & m7.m3;
+  dumper & m011;
+  dumper & m012;
+  dumper & m013;
+  DPOP_INDENT;
+  }
+void ABase::Load(ASerializeLoader& loader)
+  {
+  LPUSH_INDENT;
+  LLOGMSG("Load itd::ABase");
+  loader & m1;
+  loader & m2;
+  loader & m3;
+  loader & m4.m3;
+  loader & m13;
+  loader & m5.m1;
+  loader & m5.m2;
+  loader & m5.m3;
+  loader & m21;
+  loader & m22;
+  loader & m23;
+  loader & m7.m1;
+  loader & m7.m2;
+  loader & m7.m3;
+  loader & m011;
+  loader & m012;
+  loader & m013;
+  LPOP_INDENT;
+  }
+TTypeId ABase::GetTypeId() const { return -1; }
+void ABase::DumpPointer(ASerializeDumper& dumper) const
+  {
+  DLOGMSG("Dump itd::ABase pointer");
+  dumper.Dump(GetTypeId());
+  dumper & *this;
+  }
+void* ABase::LoadPointer(ASerializeLoader& loader)
+  {
+  LLOGMSG("Load itd::ABase pointer");
+  TTypeId objectTypeId;
+  loader.Load(objectTypeId);
+  itd::ABase* o;
+  switch(objectTypeId)
+    {
+    case NULL_TYPE_ID:
+      o = 0;
+      break;
+    case itd__TBase_TYPE_ID:
+      {
+      itd::TBase* d = (itd::TBase*)itd::TBase::BuildForSerializer();
+      loader & *d;
+      o = d;
+      }
+      break;
+    case itd__TClass_TYPE_ID:
+      o = (itd::TClass*)itd::TClass::BuildForSerializer();
+      loader & (itd::TClass&)*o;
+      break;
+    default:
+      assert(false);
+      o = 0;
+      throw 1;
+    } //end switch
+  return o;
+  } //end LoadPointer
 void TBase::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
   DLOGMSG("Dump itd::TBase");
   dumper & static_cast<const itd::ABase&>(*this);
-  dumper & m101;
-  dumper & m102;
   DPOP_INDENT;
   }
 void TBase::Load(ASerializeLoader& loader)
@@ -42,8 +122,6 @@ void TBase::Load(ASerializeLoader& loader)
   LPUSH_INDENT;
   LLOGMSG("Load itd::TBase");
   loader & static_cast<itd::ABase&>(*this);
-  loader & m101;
-  loader & m102;
   LPOP_INDENT;
   }
 TTypeId TBase::GetTypeId() const { return itd__TBase_TYPE_ID; }
@@ -89,8 +167,6 @@ void TStruct::Dump(ASerializeDumper& dumper) const
   dumper & m1;
   dumper & m2;
   dumper & m3;
-  dumper & m4;
-  dumper & m5;
   DPOP_INDENT;
   }
 void TStruct::Load(ASerializeLoader& loader)
@@ -100,8 +176,6 @@ void TStruct::Load(ASerializeLoader& loader)
   loader & m1;
   loader & m2;
   loader & m3;
-  loader & m4;
-  loader & m5;
   LPOP_INDENT;
   }
 void TClass::Dump(ASerializeDumper& dumper) const

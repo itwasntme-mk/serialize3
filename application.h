@@ -88,6 +88,8 @@ class AApplication
 
     std::string ConfigureMsvc() const;
 
+    std::string PrepareIncludes() const;
+
   private:
 #if defined(USE_SORTED_CLASSES)
     static inline void OrderClass(const TClass& _class);
@@ -99,6 +101,7 @@ class AApplication
     std::string       Compiler;
     path              CompilerPath;
     std::string       CompilerOptions;
+    std::string       CompilerIncludes;
     std::vector<path> InputFiles;
     path              PreprocessedFile;
     path              XmlFile;

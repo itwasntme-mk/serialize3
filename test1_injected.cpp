@@ -50,6 +50,7 @@ void ABase::Dump(ASerializeDumper& dumper) const
   for (int i = 0; i < 3; ++i)
     for (int ii = 0; ii < 4; ++ii)
       dumper & m4[i][ii];
+  dumper & m5;
   DPOP_INDENT;
   }
 void ABase::Load(ASerializeLoader& loader)
@@ -62,6 +63,7 @@ void ABase::Load(ASerializeLoader& loader)
   for (int i = 0; i < 3; ++i)
     for (int ii = 0; ii < 4; ++ii)
       loader & m4[i][ii];
+  loader & m5;
   LPOP_INDENT;
   }
 TTypeId ABase::GetTypeId() const { return -1; }
@@ -106,10 +108,6 @@ void TMyClass::Dump(ASerializeDumper& dumper) const
   DLOGMSG("Dump xtd::TMyClass");
   dumper & static_cast<const xtd::ABase&>(*this);
   dumper & mm1;
-  dumper & M1;
-  dumper & M2;
-  dumper & M3;
-  dumper & M4;
   DPOP_INDENT;
   }
 void TMyClass::Load(ASerializeLoader& loader)
@@ -118,10 +116,6 @@ void TMyClass::Load(ASerializeLoader& loader)
   LLOGMSG("Load xtd::TMyClass");
   loader & static_cast<xtd::ABase&>(*this);
   loader & mm1;
-  loader & M1;
-  loader & M2;
-  loader & M3;
-  loader & M4;
   LPOP_INDENT;
   }
 TTypeId TMyClass::GetTypeId() const { return xtd__TMyClass_TYPE_ID; }
@@ -254,21 +248,6 @@ void TMyClass1::Dump(ASerializeDumper& dumper) const
   dumper & mm1;
   dumper & mm2;
   dumper & mm3;
-  dumper & M1;
-  dumper & M2;
-  dumper & M3;
-  dumper & M4;
-  dumper & M5;
-  dumper & M6;
-  dumper & M7;
-  dumper & M8;
-  dumper & M9;
-  dumper & M10;
-  dumper & M11;
-  dumper & M12;
-  dumper & M13;
-  dumper & M14;
-  dumper & M15;
   DPOP_INDENT;
   }
 void TMyClass1::Load(ASerializeLoader& loader)
@@ -279,21 +258,6 @@ void TMyClass1::Load(ASerializeLoader& loader)
   loader & mm1;
   loader & mm2;
   loader & mm3;
-  loader & M1;
-  loader & M2;
-  loader & M3;
-  loader & M4;
-  loader & M5;
-  loader & M6;
-  loader & M7;
-  loader & M8;
-  loader & M9;
-  loader & M10;
-  loader & M11;
-  loader & M12;
-  loader & M13;
-  loader & M14;
-  loader & M15;
   LPOP_INDENT;
   }
 TTypeId TMyClass1::GetTypeId() const { return xtd__TMyClass1_TYPE_ID; }

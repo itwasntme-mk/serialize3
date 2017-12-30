@@ -66,6 +66,7 @@ const boost::multi_index::TTagType2ElemKind TagType2ElemKind =
     { TAG_UNION, TType::TypeUnion },
     { TAG_FUNDAMENTAL_TYPE, TType::TypeFundamental },
     { TAG_TYPEDEF, TType::Typedef },
+    { TAG_ELABORATED_TYPE, TType::TypeElaborated },
     { TAG_POINTER_TYPE, TType::TypePointer },
     { TAG_REFERENCE_TYPE, TType::TypeReference },
     { TAG_ARRAY_TYPE, TType::TypeArray },

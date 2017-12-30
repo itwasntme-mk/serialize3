@@ -24,6 +24,9 @@
     <Filter Include="Test files">
       <UniqueIdentifier>{c994f915-2619-4650-8302-2c68d5091fa2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test files\Header Files">
+      <UniqueIdentifier>{ec320299-6513-4b16-998f-08fb56e4dde1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -86,14 +89,20 @@
     <ClInclude Include="h\gen_code\serializable_boost_cntrs_includes.h">
       <Filter>Public Header Files\Generated Code</Filter>
     </ClInclude>
-    <ClInclude Include="test2.hpp">
-      <Filter>Test files</Filter>
-    </ClInclude>
     <ClInclude Include="external_app_launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file_comparator.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test2.hpp">
+      <Filter>Test files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test1.hpp">
+      <Filter>Test files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test3.hpp">
+      <Filter>Test files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -127,9 +136,6 @@
     <ClCompile Include="serializablemap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test1.hpp">
-      <Filter>Test files</Filter>
-    </ClCompile>
     <ClCompile Include="test1_injected.cpp">
       <Filter>Test files</Filter>
     </ClCompile>
@@ -138,6 +144,12 @@
     </ClCompile>
     <ClCompile Include="file_comparator.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test2_injected.cpp">
+      <Filter>Test files</Filter>
+    </ClCompile>
+    <ClCompile Include="test3_injected.cpp">
+      <Filter>Test files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

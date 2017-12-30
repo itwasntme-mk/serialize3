@@ -38,8 +38,6 @@ class TSerializableMap
     void WriteOperatorsForEnums();
 #endif
 
-    void WriteOperatorsForStruct(const TClass& _class);
-
     void WriteFunctionsForClasses();
 
     /** Analyze members of the class and check if any of them is not serializable.
@@ -58,14 +56,28 @@ class TSerializableMap
     void WriteCasesForDerived(const TClass& _class, TClassSet& classCasesWritten);
 
     template <bool DUMP_LOAD> // true for DUMP, false for LOAD
-    void WriteCall(const TClassMember& member);
+    void WriteCall(const TClassMember& member, const std::string& prefix = "");
     void WriteDumpCall(const TClassMember& member)
       { WriteCall<true>(member); }
     void WriteLoadCall(const TClassMember& member)
       { WriteCall<false>(member); }
 
-    void HandleArray(std::ofstream& out, std::string& indent, std::string iterator,
-                     std::string& reference, const TArrayType& arrayType);
+    template <bool DUMP_LOAD> // true for DUMP, false for LOAD
+    void WriteInplaceStruct(const TClass& _class, const std::string& prefix);
+    void WriteDumpInplaceStruct(const TClass& _class, const std::string& prefix)
+      { WriteInplaceStruct<true>(_class, prefix); }
+    void WriteLoadInplaceStruct(const TClass& _class, const std::string& prefix)
+      { WriteInplaceStruct<false>(_class, prefix); }
+
+    template <bool DUMP_LOAD> // true for DUMP, false for LOAD
+    void WriteInplaceUnion(const TClass& _class, const std::string& prefix);
+    void WriteDumpInplaceUnion(const TClass& _class, const std::string& prefix = "")
+      { WriteInplaceUnion<true>(_class, prefix); }
+    void WriteLoadInplaceUnion(const TClass& _class, const std::string& prefix = "")
+      { WriteInplaceUnion<false>(_class, prefix); }
+
+    bool HandleArray(std::ofstream& out, std::string& indent, std::string iterator,
+                     std::string& reference, const TArrayType& arrayType, const TType** type);
 
 #if defined(GENERATE_ENUM_OPERATORS)
     std::string GetTypeEnumCast(const TEnum& _enum, bool dump);
@@ -100,5 +112,4 @@ class TSerializableMap
     std::string         CurrentClassName;
     std::string         CurrentClassFullName;
     std::string         CurrentTypeIdName;
-    TClassSet           GeneratedNamedStructs;
   };

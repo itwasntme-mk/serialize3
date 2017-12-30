@@ -22,21 +22,22 @@ int main(int argc, const char *argv[])
     desc.add_options()
       ("help,h", "Help screen")
       ("xml-generator", bpo::value<std::string>(&xml_creator)->required(), "Specify xml generator (gccxml|castxml|castxml-gccxml).")
-      ("xml-generator-path", bpo::value<path>()->default_value(""), "Path to xml generator program.")
+      ("xml-generator-path", bpo::value<std::string>()->default_value(""), "Path to xml generator program.")
       ("xml-generator-options", bpo::value<std::string>()->default_value(""), "Additional options for xml generator.")
       ("compiler", bpo::value<std::string>()->required(), "Compiler used for input preprocessing (msvc(cl)|gcc(gcc++)|clang(clang++)).")
-      ("compiler-path", bpo::value<path>()->default_value(""), "Path to compiler used for input preprocessing.")
+      ("compiler-path", bpo::value<std::string>()->default_value(""), "Path to compiler used for input preprocessing.")
       ("compiler-options", bpo::value<std::string>()->default_value(""), "Additional options for compiler while preprocessing.")
+      ("compiler-includes", bpo::value<std::string>()->default_value(""), "Set of include dirs. Corresponds to INCLUDE env var. Separate paths with ';'")
       ("output,o", bpo::value<std::string>(), "Output file prefix.")
       (",d", bpo::value<path>()->default_value(""), "Working directory.")
       ("log,l", bpo::value<std::string>(), "Output log file.")
       ("quiet", "Quiet mode.")
       ("verbose", "Verbose mode.")
       ("indent", bpo::value<int>()->default_value(2), "Indentation in generated code. Default is 2.")
-      ("stop-when-no-changes", bpo::value<std::string>(), "Stop when no changes after one of phases:\n"
-                                                          "preprocess - file after preprocessing is the same,\n"
-                                                          "xml - generated xml is the same,\n"
-                                                          "cpp - generating output files are the same.")
+      ("check-changes", bpo::value<std::string>(), "Stop when no changes after one of phases:\n"
+                                                   "preprocess - file after preprocessing is the same,\n"
+                                                   "xml - generated xml is the same,\n"
+                                                   "cpp - generating output files are the same.")
       ("input", bpo::value<std::vector<path>>()->required(), "Input file(s).")
       ;
 

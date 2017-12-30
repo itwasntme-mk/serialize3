@@ -86,8 +86,8 @@ class ABase
 
     struct : public TStruct
       {
-      private:
-        SERIALIZABLE_OBJECT;
+      //private:
+        //SERIALIZABLE_OBJECT;
 
       public:
         int m1;

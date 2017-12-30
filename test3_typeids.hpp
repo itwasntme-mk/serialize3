@@ -2,6 +2,3 @@
 //Defines type ids for classes serializable via a pointer (Note: could be directly added to injected file)
 #pragma once
 
-const TTypeId itd__TBase_TYPE_ID = 1;
-const TTypeId itd__TClass_TYPE_ID = 2;
-const TTypeId itd__ABase__TStruct_TYPE_ID = 3;

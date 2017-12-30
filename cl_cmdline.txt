@@ -1,0 +1,1 @@
+test2.hpp --xml-generator=castxml --xml-generator-path="c:\tools\castxml\bin" --xml-generator-options="-m32 -std=c++14 -D_CRT_SECURE_NO_WARNINGS -fms-compatibility-version=19.00" --compiler=msvc --compiler-path="$(VC_ExecutablePath_x86)" --compiler-includes="c:\projects\cpp\serialize3;$(BOOST_ROOT);$(VC_IncludePath)" --verbose -l log.txt

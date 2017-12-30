@@ -13,6 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/scope_exit.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <string.h>
 #include <iostream>
@@ -47,8 +48,8 @@ int AApplication::Run(const bpo::variables_map& args)
   std::string logfile;
   TPhaseResult result = TPhaseResult::OK;
 
-  if (args.count("stop-when-no-changes"))
-    stop_when_no_changes = args["stop-when-no-changes"].as<std::string>();
+  if (args.count("check-changes"))
+    stop_when_no_changes = args["check-changes"].as<std::string>();
 
   if (args.count("log"))
     logfile = args["log"].as<std::string>();
@@ -103,14 +104,12 @@ int AApplication::Run(const bpo::variables_map& args)
 bool AApplication::Initialize(const bpo::variables_map& args)
   {
   WorkingDir = args["-d"].as<path>();
-  WorkingDir.make_preferred();
-  XmlCreatorPath = args["xml-generator-path"].as<path>();
-  XmlCreatorPath.make_preferred();
+  XmlCreatorPath = args["xml-generator-path"].as<std::string>();
   XmlCreatorOptions = args["xml-generator-options"].as<std::string>();
   Compiler = args["compiler"].as<std::string>();
-  CompilerPath = args["compiler-path"].as<path>();
-  CompilerPath.make_preferred();
+  CompilerPath = args["compiler-path"].as<std::string>();
   CompilerOptions = args["compiler-options"].as<std::string>();
+  CompilerIncludes = args["compiler-includes"].as<std::string>();
   InputFiles = args["input"].as<std::vector<path>>();
 
   if (WorkingDir.empty() == false)
@@ -168,9 +167,30 @@ std::string AApplication::ConfigureMsvc() const
   return " -showIncludes -P -TP -Fi: " + PreprocessedFile.generic_string();
   }
 
+std::string AApplication::PrepareIncludes() const
+  {
+  if (CompilerIncludes.empty())
+    return "";
+
+  std::string result;
+  result.reserve(CompilerIncludes.size() * 2);
+  boost::tokenizer<boost::char_separator<char>>
+    tokenizer(CompilerIncludes, boost::char_separator<char>(";"));
+  
+  for (auto& include : tokenizer)
+    {
+    if (include.empty() == false)
+      result += " -I \"" + include + "\"";
+    }
+
+  return std::move(result);
+  }
+
 void AApplication::RewriteFileToLog(const path& filename)
   {
-  assert(Logger.IsQuiet() == false);
+  if (Logger.IsQuiet())
+    return;
+
   std::ifstream file(filename.generic_string());
 
   if (file.good() == false)
@@ -195,11 +215,6 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
   bool ignoreCompilerPath = compilerFullName.has_parent_path(); // full path to compiler passed
   path compiler;
   
-  if (ignoreCompilerPath)
-    compiler = Compiler;
-  else
-    compiler = CompilerPath / Compiler;
-
   compilerName = compilerFullName.stem().generic_string();
 
   if (strcasecmp(compilerName.c_str(), "msvc") == 0 || strcasecmp(compilerName.c_str(), "cl") == 0)
@@ -214,6 +229,11 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
     LOG_ERROR("Uknown compiler: " << compilerName);
     return TPhaseResult::ERROR;
     }
+
+  if (ignoreCompilerPath)
+    compiler = compilerName;
+  else
+    compiler = CompilerPath / compilerName;
 
 #if defined(_WIN32)
   std::string command('\"' + compiler.string() + '\"');
@@ -233,6 +253,8 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
   for (auto& input : InputFiles)
     command += ' ' + input.generic_string();
 
+  command += ' ' + PrepareIncludes();
+
   LOG_VERBOSE("Run cmd: " << command);
 
   path logFileName(WorkingDir / "preprocessing.log");
@@ -249,8 +271,9 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
     }
   else
     {
-    if (Logger.IsQuiet() == false)
-      RewriteFileToLog(logFileName);
+    if (errorString.empty() == false)
+      LOG_ERROR(errorString);
+    RewriteFileToLog(logFileName);
     LOG_INFO("... FAILED");
     return TPhaseResult::ERROR;
     }
@@ -277,8 +300,9 @@ AApplication::TPhaseResult AApplication::GenerateXML(bool check_for_changes)
     }
   else
     {
-    if (Logger.IsQuiet() == false)
-      RewriteFileToLog(logFileName);
+    if (errorString.empty() == false)
+      LOG_ERROR(errorString);
+    RewriteFileToLog(logFileName);
     LOG_INFO("... FAILED");
     return TPhaseResult::ERROR;
     }
@@ -338,6 +362,7 @@ bool AApplication::ParseXML()
 
   typedef std::function<void(const bpt::ptree::value_type&, TTagType)> THandleXmlItem;
   typedef std::map<TTagType, THandleXmlItem, std::str_less> THandleXmlItemIndex;
+
   THandleXmlItem handle_field = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TFieldWrapper wrapper(item);
@@ -348,13 +373,15 @@ bool AApplication::ParseXML()
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
     int bitfield = wrapper.IsBitfield();
-    TClassMember* member = xmlElementsFactory->CreateClassMember(name, wrapper.GetIdStr(), publicAccess, bitfield);
+    const std::string& idStr = GET_ID_STR(id);
+    TClassMember* member = xmlElementsFactory->CreateClassMember(name, idStr, publicAccess, bitfield);
     member->SetParent(elements[context]);
     static_cast<TClass*>(elements[context])->AddMember(member);
 
     members.emplace_back(member, typeId);
     elements[id] = member;
     };
+
   THandleXmlItem handle_namespace = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TNamespaceWrapper wrapper(item);
@@ -365,12 +392,14 @@ bool AApplication::ParseXML()
 
     int id = wrapper.GetId();
     int context = wrapper.GetContextId();
-    TNamespace* _namespace = xmlElementsFactory->CreateNamespace(name, wrapper.GetIdStr());
+    const std::string& idStr = GET_ID_STR(id);
+    TNamespace* _namespace = xmlElementsFactory->CreateNamespace(name, idStr);
     if (context >= 0)
       _namespace->SetParent(elements[context]);
 
     elements[id] = _namespace;
     };
+
   THandleXmlItem handle_enum_type = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TEnumWrapper wrapper(item);
@@ -389,8 +418,8 @@ bool AApplication::ParseXML()
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
-    TEnum* _enum = xmlElementsFactory->CreateEnum(name, wrapper.GetIdStr(), tag, publicAccess,
-                                                  _sizeof);
+    const std::string& idStr = GET_ID_STR(id);
+    TEnum* _enum = xmlElementsFactory->CreateEnum(name, idStr, tag, publicAccess, _sizeof);
     _enum->SetParent(elements[context]);
 
     //if (wrapper.IsPublicAccess() == false)
@@ -399,6 +428,7 @@ bool AApplication::ParseXML()
     elements[id] = _enum;
     Enums.push_back(_enum);
     };
+
   THandleXmlItem handle_class = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TClassWrapper wrapper(item);
@@ -416,7 +446,8 @@ bool AApplication::ParseXML()
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
-    TClass* _class = xmlElementsFactory->CreateClass(name, wrapper.GetIdStr(), tag, publicAccess,
+    const std::string& idStr = GET_ID_STR(id);
+    TClass* _class = xmlElementsFactory->CreateClass(name, idStr, tag, publicAccess,
                                                      bases.size(), members.size());
 
     elements[id] = _class;
@@ -449,6 +480,7 @@ bool AApplication::ParseXML()
         }
       }
     };
+
   THandleXmlItem handle_type = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TTypeWrapper wrapper(item);
@@ -460,19 +492,20 @@ bool AApplication::ParseXML()
     TType* _type = nullptr;
     bool publicAccess = wrapper.IsPublicAccess();
     int _sizeof = wrapper.GetSizeof();
+    const std::string& idStr = GET_ID_STR(id);
 
     if (tag != TAG_ARRAY_TYPE)
-      _type = xmlElementsFactory->CreateType(name, wrapper.GetIdStr(), tag, publicAccess, _sizeof);
+      _type = xmlElementsFactory->CreateType(name, idStr, tag, publicAccess, _sizeof);
     else
       {
       int _min, _max;
       if (wrapper.GetMin(_min) == false || wrapper.GetMax(_max) == false)
         {
-        LOG_VERBOSE("Array type with invalid min/max skipped (id: " << wrapper.GetIdStr() << " name: " << name << ')');
+        LOG_VERBOSE("Array type with invalid min/max skipped (id: " << idStr << " name: " << name << ')');
         return;
         }
       int size = _min > _max ? 0 : _max - _min + 1;
-      _type = xmlElementsFactory->CreateArrayType(name, wrapper.GetIdStr(), tag, publicAccess, size);
+      _type = xmlElementsFactory->CreateArrayType(name, idStr, tag, publicAccess, size);
       }
 
     int context = wrapper.GetContextId();
@@ -484,6 +517,7 @@ bool AApplication::ParseXML()
     if (typeId != -1)
       typedefs.emplace_back(id, typeId);
     };
+
   THandleXmlItem handle_method = [&] (const bpt::ptree::value_type& item, TTagType tag)
     {
     bpt::TMethodWrapper wrapper(item);
@@ -676,7 +710,7 @@ bool AApplication::ParseXML()
 AApplication::TPhaseResult AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
   {
   bool check_for_changes =
-    (args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "cpp");
+    (args.count("check-changes") && args["check-changes"].as<std::string>() == "cpp");
 
   TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles, WorkingDir,
     OutputFilePrefix, args["indent"].as<int>(), check_for_changes);
