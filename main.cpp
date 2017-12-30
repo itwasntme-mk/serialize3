@@ -34,6 +34,9 @@ int main(int argc, const char *argv[])
       ("quiet", "Quiet mode.")
       ("verbose", "Verbose mode.")
       ("indent", bpo::value<int>()->default_value(2), "Indentation in generated code. Default is 2.")
+#if defined(GENERATE_ENUM_OPERATORS)
+      ("ignore-namespace", bpo::value<std::vector<std::string>>(), "Ignore enum types from namespace.")
+#endif
       ("check-changes", bpo::value<std::string>(), "Stop when no changes after one of phases:\n"
                                                    "preprocess - file after preprocessing is the same,\n"
                                                    "xml - generated xml is the same,\n"

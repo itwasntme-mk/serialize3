@@ -19,10 +19,16 @@ namespace bfs = boost::filesystem;
 
 TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
   const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
+#if defined(GENERATE_ENUM_OPERATORS)
+  const std::vector<std::string>& ignoredNamespaces,
+#endif
   int indent, bool check_for_changes)
   : Classes(classes), Enums(enums), Logger(logger), CheckForChanges(check_for_changes),
-    CodeGenerator(logger, Indent), Inputs(inputs), Indent(indent, ' '),
-    Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
+    CodeGenerator(logger, Indent), Inputs(inputs),
+#if defined(GENERATE_ENUM_OPERATORS)
+    IgnoredNamespaces(ignoredNamespaces),
+#endif
+    Indent(indent, ' '), Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
   {
   ParsedHeaderTypeIdsFileName = working_dir / (output_prefix + "_typeids");
   ParsedHeaderTypeIdsFileName.replace_extension(".hpp");
@@ -152,10 +158,19 @@ void TSerializableMap::WriteOperatorsForEnums()
     {
     const std::string& enumName = _enum->GetFullName();
 
+    for (auto& ignoredNamespace : IgnoredNamespaces)
+      {
+      if (enumName.compare(0, ignoredNamespace.length(), ignoredNamespace) == 0)
+        {
+        _enum = nullptr;
+        break;
+        }
+      }
+
     if (_enum->IsPublicAccess() == false)
       {
       LOG_VERBOSE("Enum with non-public access: " << enumName);
-      continue;
+      _enum = nullptr;
       }
 
     if (_enum == nullptr)

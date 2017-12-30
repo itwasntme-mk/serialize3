@@ -709,11 +709,18 @@ bool AApplication::ParseXML()
 
 AApplication::TPhaseResult AApplication::GenerateSerializationCode(const boost::program_options::variables_map& args)
   {
-  bool check_for_changes =
-    (args.count("check-changes") && args["check-changes"].as<std::string>() == "cpp");
+  std::vector<std::string> ignoredNamespaces;
+  bool check_for_changes = (args.count("stop-when-no-changes") && args["stop-when-no-changes"].as<std::string>() == "xml");
 
-  TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles, WorkingDir,
-    OutputFilePrefix, args["indent"].as<int>(), check_for_changes);
+  if (args.count("ignore-namespace"))
+    ignoredNamespaces = args["ignore-namespace"].as<std::vector<std::string>>();
+
+  TSerializableMap serializableMap(SerializableClasses, Enums, Logger, InputFiles,
+    WorkingDir, OutputFilePrefix,
+#if defined(GENERATE_ENUM_OPERATORS)
+    ignoredNamespaces,
+#endif
+    args["indent"].as<int>(), check_for_changes);
 
   return serializableMap.Generate();
   }
