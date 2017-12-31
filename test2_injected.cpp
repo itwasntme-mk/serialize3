@@ -43,12 +43,10 @@ void ABase::Dump(ASerializeDumper& dumper) const
   dumper & m21;
   dumper & m22;
   dumper & m23;
+  dumper & static_cast<const itd::ABase::TStruct&>(m7);
   dumper & m7.m1;
   dumper & m7.m2;
   dumper & m7.m3;
-  dumper & m011;
-  dumper & m012;
-  dumper & m013;
   DPOP_INDENT;
   }
 void ABase::Load(ASerializeLoader& loader)
@@ -66,12 +64,10 @@ void ABase::Load(ASerializeLoader& loader)
   loader & m21;
   loader & m22;
   loader & m23;
+  loader & static_cast<itd::ABase::TStruct&>(m7);
   loader & m7.m1;
   loader & m7.m2;
   loader & m7.m3;
-  loader & m011;
-  loader & m012;
-  loader & m013;
   LPOP_INDENT;
   }
 TTypeId ABase::GetTypeId() const { return -1; }

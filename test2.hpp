@@ -95,12 +95,12 @@ class ABase
         long long m3;
       } m7;
 
-    struct : public TStruct
+    /*struct : public TStruct
       {
       int m011;
       char m012;
       long long m013;
-      };
+      };*/
   };
 
 class TBase : public ABase

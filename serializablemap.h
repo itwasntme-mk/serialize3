@@ -74,9 +74,9 @@ class TSerializableMap
 
     template <bool DUMP_LOAD> // true for DUMP, false for LOAD
     void WriteInplaceUnion(const TClass& _class, const std::string& prefix);
-    void WriteDumpInplaceUnion(const TClass& _class, const std::string& prefix = "")
+    void WriteDumpInplaceUnion(const TClass& _class, const std::string& prefix)
       { WriteInplaceUnion<true>(_class, prefix); }
-    void WriteLoadInplaceUnion(const TClass& _class, const std::string& prefix = "")
+    void WriteLoadInplaceUnion(const TClass& _class, const std::string& prefix)
       { WriteInplaceUnion<false>(_class, prefix); }
 
     bool HandleArray(std::ofstream& out, std::string& indent, std::string iterator,

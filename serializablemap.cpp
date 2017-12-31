@@ -247,9 +247,6 @@ start_type_check:
                 << (member.GetName().empty() ? member.GetId() : member.GetFullName())
                 << " of unknown type");
       ++Errors;
-      //LOG_WARNING("member: "
-      //            << (member.GetName().empty() ? member.GetId() : member.GetFullName())
-      //            << " of unknown type");
       return;
       }
 
@@ -459,7 +456,7 @@ void TSerializableMap::WriteDumpObjectFunction(const TClass& _class)
 
     if (_class.GetTypeKind() == TType::TypeUnion)
       {
-      WriteDumpInplaceUnion(_class);
+      WriteDumpInplaceUnion(_class, Indent);
       }
     else
       {
@@ -499,7 +496,7 @@ void TSerializableMap::WriteLoadObjectFunction(const TClass& _class)
 
     if (_class.GetTypeKind() == TType::TypeUnion)
       {
-      WriteLoadInplaceUnion(_class);
+      WriteLoadInplaceUnion(_class, Indent);
       }
     else
       {
@@ -770,6 +767,36 @@ void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::strin
   {
   if (_class.GetSerializableMarker() == DO_NOT_SERIALIZE_MARKER)
     return;
+
+  _class.ForEachBase([this, _class, prefix] (const TClass& base)
+    {
+    if (base.GetSerializableMarker() == DO_NOT_SERIALIZE_MARKER)
+      return;
+
+    if (base.IsSerializable() == TYPE_NOT_MARKED)
+      {
+      LOG_ERROR("cannot generate code for inplace struct with non-serializable base: "
+                << (_class.GetName().empty() ? _class.GetId() : _class.GetFullName()));
+      ++Errors;
+      return;
+      }
+
+    if (prefix.empty())
+      {
+      LOG_ERROR("cannot generate code for inplace unnamed struct with base: "
+                << (_class.GetName().empty() ? _class.GetId() : _class.GetFullName()));
+      ++Errors;
+      return;
+      }
+
+    std::string name(prefix);
+    name.pop_back();
+
+    const char* loader_dumper =
+      DUMP_LOAD ? "dumper & static_cast<const " : "loader & static_cast<";
+
+    CodeGenerator.Out << Indent << loader_dumper << base.GetFullName() << "&>(" << name << ");" << std::endl;
+    });
 
   _class.ForEachMember([this, prefix](const TClassMember& member)
     {
