@@ -37,7 +37,7 @@ inline void AApplication::OrderClass(const TClass& _class)
   {
   using namespace std::placeholders;
 
-  if (_class.IsSerializable() != TYPE_NOT_MARKED && _class.IsOrdered() == false)
+  if (_class.NeedGenerateSerializeCode() && _class.IsOrdered() == false)
     _class.ForEachDerived(std::bind(OrderClass, _1));
   }
 #endif
@@ -671,7 +671,7 @@ bool AApplication::ParseXML()
 
 #if defined(_DEBUG)
 
-/*  for (auto& data : Enums)
+  for (auto& data : Enums)
     std::cout << "Enum " << data->GetFullName() << " (sizeof: " << data->GetSizeof() << ")" << std::endl;
 
   //for (auto& _class : classes)
@@ -698,7 +698,7 @@ bool AApplication::ParseXML()
       std::cout << ' ' << member.GetName();
       });
     std::cout << std::endl;
-    }*/
+    }
 
 #endif // #if defined(_DEBUG)
 

@@ -193,7 +193,7 @@ void TSerializableMap::WriteOperatorsForEnums()
             parent = nullptr;
             _enum = nullptr;
             }
-          else if (static_cast<const TClass*>(parent)->IsSerializable() == TYPE_NOT_MARKED)
+          else if (static_cast<const TClass*>(parent)->NeedGenerateSerializeCode() == false)
             {
             LOG_VERBOSE("Enum declared in non-serializable class/struct: " << enumName);
             parent = nullptr;
@@ -272,7 +272,7 @@ start_type_check:
         {
         const TClass* _class = static_cast<const TClass*>(type);
 
-        if (_class->GetName().empty() && _class->IsSerializable() != TYPE_NOT_MARKED)
+        if (_class->GetName().empty() && _class->NeedGenerateSerializeCode())
           {
           LOG_ERROR("cannot serialize member: " << member.GetId()
                     << " of non-serializable and non-object-serializable unnamed class/struct type");
@@ -285,7 +285,7 @@ start_type_check:
         {
         const TClass* _class = static_cast<const TClass*>(type);
 
-        if (_class->GetName().empty() && _class->IsSerializable() != TYPE_NOT_MARKED)
+        if (_class->GetName().empty() && _class->NeedGenerateSerializeCode())
           {
           LOG_ERROR("cannot serialize member: " << member.GetId()
                     << " of non-serializable and non-object-serializable unnamed union type");
@@ -293,7 +293,7 @@ start_type_check:
           break;
           }
 
-        if (_class->IsSerializable() != TYPE_NOT_MARKED && _class->IsDumpPointerNeeded())
+        if (_class->IsDumpPointerNeeded())
           {
           LOG_ERROR("cannot serialize member: " << member.GetFullName()
                     << "; the only legal mark for union is SERIALIZABLE_OBJECT");
@@ -352,6 +352,9 @@ start_type_check:
 
 void TSerializableMap::WriteBuildForSerializerMethods(const TClass& _class)
   {
+  if (_class.NeedGenerateSerializeCode() == false)
+    return;
+
   if (_class.IsPointerSerializable())
     {
     if (_class.GetName().empty())
@@ -373,6 +376,9 @@ void TSerializableMap::WriteBuildForSerializerMethods(const TClass& _class)
 
 void TSerializableMap::WriteMethodsForClass(const TClass& _class)
   {
+  if (_class.NeedGenerateSerializeCode() == false)
+    return;
+
   if (_class.IsDumpNeeded() || _class.IsLoadNeeded())
     {
     if (AnalyzeMembers(_class) == false)
@@ -463,7 +469,7 @@ void TSerializableMap::WriteDumpObjectFunction(const TClass& _class)
       //Dump bases:   TBase::Dump(d);
       _class.ForEachBase([this, &out](const TClass& base)
         {
-        if (base.IsSerializable() != TYPE_NOT_MARKED)
+        if (base.NeedGenerateSerializeCode())
           out << Indent << "dumper & static_cast<const " << base.GetFullName() << "&>(*this);" << std::endl;
         });
 
@@ -503,7 +509,7 @@ void TSerializableMap::WriteLoadObjectFunction(const TClass& _class)
       //Load bases:   Load((TBase&)o);
       _class.ForEachBase([this, &out](const TClass& base)
         {
-        if (base.IsSerializable() != TYPE_NOT_MARKED)
+        if (base.NeedGenerateSerializeCode())
           out << Indent << "loader & static_cast<" << base.GetFullName() << "&>(*this);" << std::endl;
         });
 
@@ -618,7 +624,7 @@ void TSerializableMap::WriteTypeIdCase(const TClass& _class)
 
 void TSerializableMap::WriteCasesForDerived(const TClass& _class, TClassSet& classCasesWritten)
   {
-  if (_class.IsSerializable() == TYPE_NOT_MARKED)
+  if (_class.NeedGenerateSerializeCode() == false)
     return;
 
   auto insertInfo = classCasesWritten.insert(&_class);
@@ -648,33 +654,7 @@ bool TSerializableMap::HandleArray(std::ofstream& out, std::string& indent, std:
 
   const TType* elemType = arrayType.GetElemType();
 
-  if (elemType->GetTypeKind() != TType::TypeArray)
-    {
-    *type = elemType;
-
-    switch (elemType->GetTypeKind())
-      {
-      case TType::TypeUnion:
-      case TType::TypeClass:
-      case TType::TypeStruct:
-        {
-        const TClass& _class = static_cast<const TClass&>(*elemType);
-
-        if (_class.IsSerializable() != TYPE_NOT_MARKED)
-          {
-          LOG_ERROR("cannot generate code for array of non-serializable type: "
-                    << (elemType->GetName().empty() ? elemType->GetId() : elemType->GetFullName()));
-          ++Errors;
-          return false;
-          }
-        }
-        break;
-
-      default:
-        break;
-      }
-    }
-  else
+  if (elemType->GetTypeKind() == TType::TypeArray)
     {
     iterator += 'i';
     const TArrayType* arrayType = static_cast<const TArrayType*>(elemType);
@@ -730,7 +710,7 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
       case TType::TypeClass:
       case TType::TypeStruct:
       case TType::TypeUnion:
-        if (static_cast<const TClass*>(type)->IsSerializable() == TYPE_NOT_MARKED)
+        if (static_cast<const TClass*>(type)->IsSerializable() == TYPE_DO_NOT_SERIALIZE)
           return;
 
       default:
@@ -743,6 +723,9 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
     }
 
   const TClass* _class = static_cast<const TClass*>(type);
+
+  if (is_array)
+    out << indent << '{' << std::endl;
 
   switch (type->GetTypeKind())
     {
@@ -760,17 +743,20 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
       ++Errors;
       break;
     }
+
+  if (is_array)
+    out << indent << '}' << std::endl;
   }
 
 template <bool DUMP_LOAD> // true for DUMP, false for LOAD
 void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::string& prefix)
   {
-  if (_class.GetSerializableMarker() == DO_NOT_SERIALIZE_MARKER)
+  if (_class.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
     return;
 
   _class.ForEachBase([this, _class, prefix] (const TClass& base)
     {
-    if (base.GetSerializableMarker() == DO_NOT_SERIALIZE_MARKER)
+    if (base.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
       return;
 
     if (base.IsSerializable() == TYPE_NOT_MARKED)
@@ -815,7 +801,7 @@ void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::strin
 template <bool DUMP_LOAD> // true for DUMP, false for LOAD
 void TSerializableMap::WriteInplaceUnion(const TClass& _class, const std::string& prefix)
   {
-  if (_class.GetSerializableMarker() == DO_NOT_SERIALIZE_MARKER)
+  if (_class.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
     return;
 
   typedef std::pair<int, const TClassMember*> TMemberInfo;
@@ -841,7 +827,7 @@ void TSerializableMap::WriteInplaceUnion(const TClass& _class, const std::string
     });
 
   if (biggest.second)
-    WriteCall<DUMP_LOAD>(*biggest.second, prefix);
+    WriteCall<DUMP_LOAD>(*biggest.second);
   }
 
 #if defined(GENERATE_ENUM_OPERATORS)

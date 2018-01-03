@@ -105,6 +105,16 @@ void TClass2::Dump(ASerializeDumper& dumper) const
   DPUSH_INDENT;
   DLOGMSG("Dump TClass2");
   dumper & m;
+  dumper & m1;
+  dumper & m1;
+  dumper & m4;
+  dumper & m5;
+  dumper & m6;
+  dumper & m7;
+  dumper & m8.m4;
+  dumper & m8.m5;
+  dumper & m8.m6.m6;
+  dumper & m8.m6.m7;
   DPOP_INDENT;
   }
 void TClass2::Load(ASerializeLoader& loader)
@@ -112,6 +122,16 @@ void TClass2::Load(ASerializeLoader& loader)
   LPUSH_INDENT;
   LLOGMSG("Load TClass2");
   loader & m;
+  loader & m1;
+  loader & m1;
+  loader & m4;
+  loader & m5;
+  loader & m6;
+  loader & m7;
+  loader & m8.m4;
+  loader & m8.m5;
+  loader & m8.m6.m6;
+  loader & m8.m6.m7;
   LPOP_INDENT;
   }
 TTypeId TClass2::GetTypeId() const { return -1; }

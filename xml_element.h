@@ -175,7 +175,10 @@ class TClass final : public TType
     TMethodType GetSerializableMarker() const;
 
     TSerializeMethod IsSerializable() const
-      { return SerializeMethod != TYPE_DO_NOT_SERIALIZE ? SerializeMethod : TYPE_NOT_MARKED; }
+      { return SerializeMethod; }
+
+    bool NeedGenerateSerializeCode() const
+      { return SerializeMethod != TYPE_DO_NOT_SERIALIZE && SerializeMethod != TYPE_NOT_MARKED; }
 
     bool IsTemplate() const;
 

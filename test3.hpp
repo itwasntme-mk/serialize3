@@ -89,6 +89,40 @@ class TClass2
 
   private:
     TClass1 m;
+
+    union
+      {
+      int m1;
+      char m2;
+      };
+
+    union
+      {
+      int m1;
+      char m2;
+      } m3;
+
+    struct
+      {
+      int m4;
+      int m5;
+      struct
+        {
+        int m6;
+        int m7;
+        };
+      };
+
+    struct
+      {
+      int m4;
+      int m5;
+      struct
+        {
+        int m6;
+        int m7;
+        } m6;
+      } m8;
   };
 
 class TUnion
