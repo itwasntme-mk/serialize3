@@ -45,16 +45,20 @@ inline void AApplication::OrderClass(const TClass& _class)
 int AApplication::Run(const bpo::variables_map& args)
   {
   std::string stop_when_no_changes;
-  std::string logfile;
+  path logfile;
   TPhaseResult result = TPhaseResult::OK;
 
   if (args.count("check-changes"))
     stop_when_no_changes = args["check-changes"].as<std::string>();
 
   if (args.count("log"))
+    {
     logfile = args["log"].as<std::string>();
+    if (args.count("-d") && logfile.has_parent_path() == false)
+      logfile = args["-d"].as<path>() / logfile;
+    }
 
-  Logger.Open(logfile, args.count("verbose") != 0, args.count("quiet") != 0);
+  Logger.Open(logfile.generic_string(), args.count("verbose") != 0, args.count("quiet") != 0);
 
   if (Initialize(args) == false)
     return -1;
@@ -116,8 +120,7 @@ bool AApplication::Initialize(const bpo::variables_map& args)
     {
     for (auto& file : InputFiles)
       {
-      file.make_preferred();
-      if (file.is_absolute() == false)
+      if (file.has_parent_path() == false)
         file = WorkingDir / file;
       }
     }
@@ -133,7 +136,7 @@ bool AApplication::Initialize(const bpo::variables_map& args)
 
   PreprocessedFile = InputFiles[0];
 
-  if (PreprocessedFile.is_absolute() == false)
+  if (PreprocessedFile.has_parent_path() == false)
     PreprocessedFile = WorkingDir / PreprocessedFile;
 
   if (XmlCreatorOptions.find("c++") != 0)

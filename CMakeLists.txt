@@ -34,7 +34,7 @@ LIST(APPEND FILE_LIST
      file_comparator.cpp)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  LIST(APPEND FILE_LIST test1_injected.cpp test2_injected.cpp)
+  LIST(APPEND FILE_LIST test1_injected.cpp test2_injected.cpp test3_injected.cpp)
 endif()
 
 add_executable( serialize3 ${FILE_LIST})
