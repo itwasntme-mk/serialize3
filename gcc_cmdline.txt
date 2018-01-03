@@ -1,0 +1,9 @@
+/home/syncad/serialize3/build/Release/serialize3 serialized_headers.hpp
+-d ./include/steem/chain
+--xml-generator=castxml
+--xml-generator-path="/home/syncad/castxml/build/Release/bin"
+--xml-generator-options="-undef -std=c++14 -fno-builtin"
+--compiler=gcc
+--compiler-path=/usr/bin
+--compiler-options="-std=c++14 -DSTEEM_ENABLE_SMT -Wall -fno-builtin-memcmp -fnon-call-exceptions -std=c++14 -I/home/syncad/steemit/steem/libraries/chain/include -I/home/syncad/steemit/steem/build/Release/libraries/chain/include -I/home/syncad -I/home/syncad/steemit/steem/libraries/protocol/include -I/home/syncad/steemit/steem/build/Release/libraries/protocol/include -I/home/syncad/steemit/steem/libraries/fc/include -I/home/syncad/steemit/steem/libraries/fc/vendor/diff-match-patch-cpp-stl -I/home/syncad/steemit/steem/libraries/fc/vendor/websocketpp -I/home/syncad/steemit/steem/libraries/fc -I/home/syncad/steemit/steem/libraries/fc/vendor/equihash/include -isystem /home/syncad/steemit/steem/libraries/fc/vendor/secp256k1-zkp/include -I/home/syncad/steemit/steem/libraries/chainbase/include -I/home/syncad/steemit/steem/libraries/schema/include"
+-l log.txt
