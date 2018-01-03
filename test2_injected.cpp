@@ -35,7 +35,7 @@ void ABase::Dump(ASerializeDumper& dumper) const
   dumper & m1;
   dumper & m2;
   dumper & m3;
-  dumper & m4.m3;
+  dumper & m3;
   dumper & m13;
   dumper & m5.m1;
   dumper & m5.m2;
@@ -56,7 +56,7 @@ void ABase::Load(ASerializeLoader& loader)
   loader & m1;
   loader & m2;
   loader & m3;
-  loader & m4.m3;
+  loader & m3;
   loader & m13;
   loader & m5.m1;
   loader & m5.m2;

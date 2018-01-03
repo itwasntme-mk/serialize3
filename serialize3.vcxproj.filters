@@ -104,6 +104,9 @@
     <ClInclude Include="test3.hpp">
       <Filter>Test files\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test0.hpp">
+      <Filter>Test files\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp">

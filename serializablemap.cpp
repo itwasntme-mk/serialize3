@@ -723,8 +723,11 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
     }
 
   const TClass* _class = static_cast<const TClass*>(type);
+  auto typeKind = type->GetTypeKind();
+  bool complex_type =
+    (typeKind == TType::TypeClass || typeKind == TType::TypeStruct || TType::TypeUnion);
 
-  if (is_array)
+  if (complex_type && is_array)
     out << indent << '{' << std::endl;
 
   switch (type->GetTypeKind())
@@ -744,7 +747,7 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
       break;
     }
 
-  if (is_array)
+  if (complex_type && is_array)
     out << indent << '}' << std::endl;
   }
 

@@ -19,18 +19,6 @@ void* TClass1::BuildForSerializer()
   REGISTER_OBJECT((WRAP(TClass1)), ptr);
   return ptr;
   }
-void* TClass2::BuildForSerializer()
-  {
-  TClass2* ptr = new TClass2;
-  REGISTER_OBJECT((WRAP(TClass2)), ptr);
-  return ptr;
-  }
-void* TUnion::BuildForSerializer()
-  {
-  TUnion* ptr = new TUnion;
-  REGISTER_OBJECT((WRAP(TUnion)), ptr);
-  return ptr;
-  }
 void TUnion1::Dump(ASerializeDumper& dumper) const
   {
   DPUSH_INDENT;
@@ -92,112 +80,6 @@ void* TClass1::LoadPointer(ASerializeLoader& loader)
     case -1:
       o = (TClass1*)TClass1::BuildForSerializer();
       loader & (TClass1&)*o;
-      break;
-    default:
-      assert(false);
-      o = 0;
-      throw 1;
-    } //end switch
-  return o;
-  } //end LoadPointer
-void TClass2::Dump(ASerializeDumper& dumper) const
-  {
-  DPUSH_INDENT;
-  DLOGMSG("Dump TClass2");
-  dumper & m;
-  dumper & m1;
-  dumper & m1;
-  dumper & m4;
-  dumper & m5;
-  dumper & m6;
-  dumper & m7;
-  dumper & m8.m4;
-  dumper & m8.m5;
-  dumper & m8.m6.m6;
-  dumper & m8.m6.m7;
-  DPOP_INDENT;
-  }
-void TClass2::Load(ASerializeLoader& loader)
-  {
-  LPUSH_INDENT;
-  LLOGMSG("Load TClass2");
-  loader & m;
-  loader & m1;
-  loader & m1;
-  loader & m4;
-  loader & m5;
-  loader & m6;
-  loader & m7;
-  loader & m8.m4;
-  loader & m8.m5;
-  loader & m8.m6.m6;
-  loader & m8.m6.m7;
-  LPOP_INDENT;
-  }
-TTypeId TClass2::GetTypeId() const { return -1; }
-void TClass2::DumpPointer(ASerializeDumper& dumper) const
-  {
-  DLOGMSG("Dump TClass2 pointer");
-  dumper.Dump(GetTypeId());
-  dumper & *this;
-  }
-void* TClass2::LoadPointer(ASerializeLoader& loader)
-  {
-  LLOGMSG("Load TClass2 pointer");
-  TTypeId objectTypeId;
-  loader.Load(objectTypeId);
-  TClass2* o;
-  switch(objectTypeId)
-    {
-    case NULL_TYPE_ID:
-      o = 0;
-      break;
-    case -1:
-      o = (TClass2*)TClass2::BuildForSerializer();
-      loader & (TClass2&)*o;
-      break;
-    default:
-      assert(false);
-      o = 0;
-      throw 1;
-    } //end switch
-  return o;
-  } //end LoadPointer
-void TUnion::Dump(ASerializeDumper& dumper) const
-  {
-  DPUSH_INDENT;
-  DLOGMSG("Dump TUnion");
-  dumper & m;
-  DPOP_INDENT;
-  }
-void TUnion::Load(ASerializeLoader& loader)
-  {
-  LPUSH_INDENT;
-  LLOGMSG("Load TUnion");
-  loader & m;
-  LPOP_INDENT;
-  }
-TTypeId TUnion::GetTypeId() const { return -1; }
-void TUnion::DumpPointer(ASerializeDumper& dumper) const
-  {
-  DLOGMSG("Dump TUnion pointer");
-  dumper.Dump(GetTypeId());
-  dumper & *this;
-  }
-void* TUnion::LoadPointer(ASerializeLoader& loader)
-  {
-  LLOGMSG("Load TUnion pointer");
-  TTypeId objectTypeId;
-  loader.Load(objectTypeId);
-  TUnion* o;
-  switch(objectTypeId)
-    {
-    case NULL_TYPE_ID:
-      o = 0;
-      break;
-    case -1:
-      o = (TUnion*)TUnion::BuildForSerializer();
-      loader & (TUnion&)*o;
       break;
     default:
       assert(false);

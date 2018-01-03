@@ -82,7 +82,7 @@ struct TClass1
 class TClass2
   {
   private:
-    SERIALIZABLE;
+    //SERIALIZABLE;
 
   public:
     TClass2() = default;
@@ -122,13 +122,13 @@ class TClass2
         int m6;
         int m7;
         } m6;
-      } m8;
+      } m8[3][2];
   };
 
 class TUnion
   {
   private:
-    SERIALIZABLE;
+    //SERIALIZABLE;
 
   public:
     TUnion() = default;

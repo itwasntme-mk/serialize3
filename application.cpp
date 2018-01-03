@@ -347,17 +347,17 @@ bool AApplication::ParseXML()
     }
 
   // class+baseClasses
-  std::vector<std::pair<size_t, TIdCntr>> baseClasses;
+  std::vector<std::pair<int, TIdCntr>> baseClasses;
   std::vector<TClass*> classes;
   // typedef type1 type2; // pair: type2+type1
-  std::vector<std::pair<size_t, size_t>> typedefs;
+  std::map<int, int> typedefs;
   // member+type
-  std::vector<std::pair<TClassMember*, size_t>> members;
-  std::set<size_t> virtuallyInheritedClasses;
+  std::vector<std::pair<TClassMember*, int>> members;
+  std::set<int> virtuallyInheritedClasses;
   TXmlElementsFactory* xmlElementsFactory = TXmlElementsFactory::GetInstance();
 
   // pair of element+its parent
-  size_t xmlSize = content->size();
+  int xmlSize = static_cast<int>(content->size());
   std::unique_ptr<AXmlElement*[]> elements(new AXmlElement*[xmlSize]);
   memset(elements.get(), 0, xmlSize * sizeof(AXmlElement*));
 
@@ -518,7 +518,7 @@ bool AApplication::ParseXML()
     elements[id] = _type;
 
     if (typeId != -1)
-      typedefs.emplace_back(id, typeId);
+      typedefs.emplace(id, typeId);
     };
 
   THandleXmlItem handle_method = [&] (const bpt::ptree::value_type& item, TTagType tag)
@@ -579,43 +579,73 @@ bool AApplication::ParseXML()
   for (auto id : virtuallyInheritedClasses)
     static_cast<TClass*>(elements[id])->SetVirtuallyDerived();
 
+  // typedef type1 type2; we want to type2 point to type1 and type1 replace type2 in elements table
+  std::function<TType*(int, int)> set_typedefed_type = [&] (int typeId1, int typeId2)
+    {
+    TType* type1 = static_cast<TType*>(elements[typeId1]);
+    TType* type2 = static_cast<TType*>(elements[typeId2]);
+
+    if (type1 == nullptr ||
+        (type1->GetElemKind() != TType::Typedef && type1->GetElemKind() != TType::TypeElaborated))
+      {
+      return type1;
+      }
+
+    auto found = typedefs.find(typeId1);
+    assert(found != typedefs.end());
+    typeId1 = found->second;
+    type1 = static_cast<TType*>(elements[typeId1]);
+
+    if (type1)
+      type1 = set_typedefed_type(typeId1, typeId2);
+
+    elements[typeId2] = type1;
+    return type1;
+    };
+
+  for (auto& data : typedefs)
+    {
+    TType* type1 = static_cast<TType*>(elements[data.first]);
+
+    if (type1 == nullptr)
+      elements[data.first] = nullptr;
+    else if (type1->GetElemKind() == TType::Typedef || type1->GetElemKind() == TType::TypeElaborated)
+      elements[data.first] = set_typedefed_type(data.second, data.first);
+    }
+
+#if defined(_DEBUG)
+  for (auto& data : typedefs)
+    {
+    TType* type1 = static_cast<TType*>(elements[data.second]);
+    assert(type1 == nullptr ||
+           (type1->GetTypeKind() != TType::Typedef && type1->GetElemKind() != TType::TypeElaborated));
+    }
+#endif // #if defined(_DEBUG)
+
   // complete type connections
   for (auto& data : typedefs)
     {
     TType* type1 = static_cast<TType*>(elements[data.second]);
     TType* type2 = static_cast<TType*>(elements[data.first]);
-    type2->SetPointedType(type1);
+
+    if (type2 != nullptr && type1 != type2)
+      type2->SetPointedType(type1);
     }
 
-  // inplace typedef'ed types
-  for (auto& data : typedefs)
-    {
-    TType* type1 = static_cast<TType*>(elements[data.second]);
-    TType* type2 = static_cast<TType*>(elements[data.first]);
-
-    if (type1 == nullptr || type2->GetTypeKind() == TType::TypeArray)
-      continue;
-
-    while (type1 && (type1->GetTypeKind() == TType::Typedef || type1->GetTypeKind() == TType::TypeElaborated))
-      type1 = const_cast<TType*>(type1->GetPointedType());
-
-    elements[data.first] = type1;
-    }
-
-  // to be sures buffers are released, not only cleared
+  // to be sure buffers are released, not only cleared
   typedefs = decltype(typedefs)();
 
   // complete members' types
   for (auto& data : members)
     data.first->SetType(static_cast<TType*>(elements[data.second]));
 
-  // to be sures buffers are released, not only cleared
+  // to be sure buffers are released, not only cleared
   members = decltype(members)();
 
   // check if serializable condition passed between base & derived classes
   for (auto& data : baseClasses)
     {
-    size_t id = data.first;
+    int id = data.first;
     TClass* _class = static_cast<TClass*>(elements[id]);
     TMethodType serializableType = _class->GetSerializableMarker();
 
@@ -652,7 +682,7 @@ bool AApplication::ParseXML()
       }
     }
 
-  // to be sures buffers are released, not only cleared
+  // to be sure buffers are released, not only cleared
   baseClasses = decltype(baseClasses)();
 
 #if defined(USE_SORTED_CLASSES)
