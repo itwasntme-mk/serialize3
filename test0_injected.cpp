@@ -26,9 +26,7 @@ void TClass::Dump(ASerializeDumper& dumper) const
   dumper & m1;
   dumper & m2;
   for (int i = 0; i < 3; ++i)
-    {
     dumper & m3[i];
-    }
   DPOP_INDENT;
   }
 void TClass::Load(ASerializeLoader& loader)
@@ -38,9 +36,7 @@ void TClass::Load(ASerializeLoader& loader)
   loader & m1;
   loader & m2;
   for (int i = 0; i < 3; ++i)
-    {
     loader & m3[i];
-    }
   LPOP_INDENT;
   }
 TTypeId TClass::GetTypeId() const { return -1; }

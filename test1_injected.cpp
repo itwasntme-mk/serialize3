@@ -46,14 +46,10 @@ void ABase::Dump(ASerializeDumper& dumper) const
   DLOGMSG("Dump xtd::ABase");
   dumper & m1;
   for (int i = 0; i < 3; ++i)
-    {
-    }
+    dumper & m3[i];
   for (int i = 0; i < 3; ++i)
     for (int ii = 0; ii < 4; ++ii)
-      {
-      }
-  dumper & m5;
-  dumper & m6;
+      dumper & m4[i][ii];
   DPOP_INDENT;
   }
 void ABase::Load(ASerializeLoader& loader)
@@ -62,14 +58,10 @@ void ABase::Load(ASerializeLoader& loader)
   LLOGMSG("Load xtd::ABase");
   loader & m1;
   for (int i = 0; i < 3; ++i)
-    {
-    }
+    loader & m3[i];
   for (int i = 0; i < 3; ++i)
     for (int ii = 0; ii < 4; ++ii)
-      {
-      }
-  loader & m5;
-  loader & m6;
+      loader & m4[i][ii];
   LPOP_INDENT;
   }
 TTypeId ABase::GetTypeId() const { return -1; }
