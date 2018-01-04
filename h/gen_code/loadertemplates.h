@@ -32,7 +32,7 @@ typename std::enable_if<std::is_enum<TType>::value == false>::type
 #endif
 operator&(ASerializeLoader& loader, TType& o)
   {
-  o.Load(loader);
+  loader.Load(o);
   }
 
 #if !defined(GENERATE_ENUM_OPERATORS)

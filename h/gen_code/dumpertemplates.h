@@ -42,7 +42,7 @@ typename std::enable_if<std::is_enum<TType>::value == false>::type
 #endif
 operator&(ASerializeDumper& dumper, const TType& o)
   {
-  o.Dump(dumper);
+  dumper.Dump(o);
   }
 
 #if !defined(GENERATE_ENUM_OPERATORS)
