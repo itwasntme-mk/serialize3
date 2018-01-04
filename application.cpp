@@ -580,45 +580,59 @@ bool AApplication::ParseXML()
     static_cast<TClass*>(elements[id])->SetVirtuallyDerived();
 
   // typedef type1 type2; we want to type2 point to type1 and type1 replace type2 in elements table
-  std::function<TType*(int, int)> set_typedefed_type = [&] (int typeId1, int typeId2)
+  std::function<TType*(int)> get_origin_type = [&] (int typeId)
     {
-    TType* type1 = static_cast<TType*>(elements[typeId1]);
-    TType* type2 = static_cast<TType*>(elements[typeId2]);
+    TType* type1 = static_cast<TType*>(elements[typeId]);
 
-    if (type1 == nullptr ||
-        (type1->GetElemKind() != TType::Typedef && type1->GetElemKind() != TType::TypeElaborated))
-      {
+    if (type1 == nullptr || type1->IsTypedef() == false)
       return type1;
-      }
 
-    auto found = typedefs.find(typeId1);
+    auto found = typedefs.find(typeId);
     assert(found != typedefs.end());
-    typeId1 = found->second;
-    type1 = static_cast<TType*>(elements[typeId1]);
-
-    if (type1)
-      type1 = set_typedefed_type(typeId1, typeId2);
-
-    elements[typeId2] = type1;
+    typeId = found->second;
+    type1 = get_origin_type(typeId);
+    elements[typeId] = type1;
     return type1;
     };
 
   for (auto& data : typedefs)
     {
-    TType* type1 = static_cast<TType*>(elements[data.first]);
+    TType* type2 = static_cast<TType*>(elements[data.first]);
+    TType* type1 = static_cast<TType*>(elements[data.second]);
 
-    if (type1 == nullptr)
-      elements[data.first] = nullptr;
-    else if (type1->GetElemKind() == TType::Typedef || type1->GetElemKind() == TType::TypeElaborated)
-      elements[data.first] = set_typedefed_type(data.second, data.first);
+    std::cout << "typedef " << (type1 ? type1->GetName() : "<null>") << ' ' << type2->GetName() << std::endl;
+    }
+
+  for (auto& data : typedefs)
+    {
+    // typedef type1 type2;
+    TType* type2 = static_cast<TType*>(elements[data.first]);
+
+    if (type2 && type2->IsTypedef())
+      {
+      if (type2->GetName() == "type3")
+        {
+        std::cout << std::endl;
+        }
+      
+      TType* type1 = get_origin_type(data.second);
+      elements[data.first] = type1;
+      }
+    }
+
+  for (auto& data : typedefs)
+    {
+    TType* type2 = static_cast<TType*>(elements[data.first]);
+    TType* type1 = static_cast<TType*>(elements[data.second]);
+
+    std::cout << "typedef " << (type1 ? type1->GetName() : "<null>") << ' ' << type2->GetName() << std::endl;
     }
 
 #if defined(_DEBUG)
   for (auto& data : typedefs)
     {
     TType* type1 = static_cast<TType*>(elements[data.second]);
-    assert(type1 == nullptr ||
-           (type1->GetTypeKind() != TType::Typedef && type1->GetElemKind() != TType::TypeElaborated));
+    assert(type1 == nullptr || type1->IsTypedef() == false);
     }
 #endif // #if defined(_DEBUG)
 
@@ -627,6 +641,11 @@ bool AApplication::ParseXML()
     {
     TType* type1 = static_cast<TType*>(elements[data.second]);
     TType* type2 = static_cast<TType*>(elements[data.first]);
+
+    if (data.first == 16)
+      {
+      std::cout << std::endl;
+      }
 
     if (type2 != nullptr && type1 != type2)
       type2->SetPointedType(type1);

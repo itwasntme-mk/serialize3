@@ -108,6 +108,8 @@ class TType : public AXmlElement
 
     int GetSizeof() const { return Sizeof; }
 
+    bool IsTypedef() const { return ElemKind == Typedef || ElemKind == TypeElaborated; }
+
   protected:
     const TType*  Type = nullptr; // could be null if fundamental type
     int           Sizeof = 0;
