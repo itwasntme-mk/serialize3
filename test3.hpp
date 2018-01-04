@@ -82,7 +82,7 @@ struct TClass1
 class TClass2
   {
   private:
-    //SERIALIZABLE;
+    SERIALIZABLE;
 
   public:
     TClass2() = default;

@@ -17,6 +17,11 @@
 namespace bfs = boost::filesystem;
 
 
+std::string TSerializableMap::Indent;
+std::string TSerializableMap::Indent2;
+std::string TSerializableMap::Indent3;
+
+
 TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums, TLogger& logger,
   const std::vector<path>& inputs, const path& working_dir, const std::string& output_prefix,
 #if defined(GENERATE_ENUM_OPERATORS)
@@ -24,16 +29,19 @@ TSerializableMap::TSerializableMap(const TClasses& classes, const TEnums& enums,
 #endif
   int indent, bool check_for_changes)
   : Classes(classes), Enums(enums), Logger(logger), CheckForChanges(check_for_changes),
-    CodeGenerator(logger, Indent), Inputs(inputs),
+    CodeGenerator(logger, Indent), Inputs(inputs)
 #if defined(GENERATE_ENUM_OPERATORS)
-    IgnoredNamespaces(ignoredNamespaces),
+    , IgnoredNamespaces(ignoredNamespaces)
 #endif
-    Indent(indent, ' '), Indent2(indent * 2, ' '), Indent3(indent * 3, ' ')
   {
   ParsedHeaderTypeIdsFileName = working_dir / (output_prefix + "_typeids");
   ParsedHeaderTypeIdsFileName.replace_extension(".hpp");
   InjectedFunctionsFileName = working_dir / (output_prefix + "_injected");
   InjectedFunctionsFileName.replace_extension(".cpp");
+
+  Indent = std::string(indent, ' ');
+  Indent2 = std::string(indent * 2, ' ');
+  Indent3 = std::string(indent * 3, ' ');
   }
 
 AApplication::TPhaseResult TSerializableMap::Generate()
@@ -659,20 +667,22 @@ bool TSerializableMap::HandleArray(std::ofstream& out, std::string& indent, std:
     iterator += 'i';
     const TArrayType* arrayType = static_cast<const TArrayType*>(elemType);
 
-    if (HandleArray(out, indent, iterator, reference, *arrayType, type) == false)
-      return false;
+    return HandleArray(out, indent, iterator, reference, *arrayType, type);
     }
+
+  *type = elemType;
 
   return true;
   }
 
 template <bool DUMP_CALL>
-void TSerializableMap::WriteCall(const TClassMember& member, const std::string& prefix)
+void TSerializableMap::WriteCall(const TClassMember& member, const std::string& prefix,
+  const std::string& _indent)
   {
   std::ofstream& out = CodeGenerator.Out;
   const TType* type = member.GetType();
-  assert(type == nullptr || type->GetTypeKind() != TType::Typedef);
-  std::string indent(Indent);
+  assert(type == nullptr || type->IsTypedef() == false);
+  std::string indent(_indent);
   std::string reference(prefix + member.GetName());
   bool is_array = false;
   const char* dumper_loader = DUMP_CALL ? "dumper & " : "loader & ";
@@ -730,15 +740,18 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
   if (complex_type && is_array)
     out << indent << '{' << std::endl;
 
+  if (reference.empty() == false)
+    reference += '.';
+
   switch (type->GetTypeKind())
     {
     case TType::TypeClass:
     case TType::TypeStruct:
-      WriteInplaceStruct<DUMP_CALL>(*_class, reference.empty() ? reference : (reference + '.'));
+      WriteInplaceStruct<DUMP_CALL>(*_class, reference, indent);
       break;
 
     case TType::TypeUnion:
-      WriteInplaceUnion<DUMP_CALL>(*_class, reference.empty() ? reference : (reference + '.'));
+      WriteInplaceUnion<DUMP_CALL>(*_class, reference);
       break;
 
     default:
@@ -752,12 +765,13 @@ void TSerializableMap::WriteCall(const TClassMember& member, const std::string& 
   }
 
 template <bool DUMP_LOAD> // true for DUMP, false for LOAD
-void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::string& prefix)
+void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::string& prefix,
+  const std::string& indent)
   {
   if (_class.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
     return;
 
-  _class.ForEachBase([this, _class, prefix] (const TClass& base)
+  _class.ForEachBase([this, &_class, &prefix, &indent] (const TClass& base)
     {
     if (base.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
       return;
@@ -784,10 +798,10 @@ void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::strin
     const char* loader_dumper =
       DUMP_LOAD ? "dumper & static_cast<const " : "loader & static_cast<";
 
-    CodeGenerator.Out << Indent << loader_dumper << base.GetFullName() << "&>(" << name << ");" << std::endl;
+    CodeGenerator.Out << indent << loader_dumper << base.GetFullName() << "&>(" << name << ");" << std::endl;
     });
 
-  _class.ForEachMember([this, prefix](const TClassMember& member)
+  _class.ForEachMember([this, &prefix, &indent](const TClassMember& member)
     {
     if (member.IsPublicAccess() == false)
       {
@@ -797,7 +811,7 @@ void TSerializableMap::WriteInplaceStruct(const TClass& _class, const std::strin
       return;
       }
 
-    WriteCall<DUMP_LOAD>(member, prefix);
+    WriteCall<DUMP_LOAD>(member, prefix, indent);
     });
   }
 

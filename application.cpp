@@ -595,13 +595,13 @@ bool AApplication::ParseXML()
     return type1;
     };
 
-  for (auto& data : typedefs)
+  /*for (auto& data : typedefs)
     {
     TType* type2 = static_cast<TType*>(elements[data.first]);
     TType* type1 = static_cast<TType*>(elements[data.second]);
 
     std::cout << "typedef " << (type1 ? type1->GetName() : "<null>") << ' ' << type2->GetName() << std::endl;
-    }
+    }*/
 
   for (auto& data : typedefs)
     {
@@ -610,23 +610,18 @@ bool AApplication::ParseXML()
 
     if (type2 && type2->IsTypedef())
       {
-      if (type2->GetName() == "type3")
-        {
-        std::cout << std::endl;
-        }
-      
       TType* type1 = get_origin_type(data.second);
       elements[data.first] = type1;
       }
     }
 
-  for (auto& data : typedefs)
+  /*for (auto& data : typedefs)
     {
     TType* type2 = static_cast<TType*>(elements[data.first]);
     TType* type1 = static_cast<TType*>(elements[data.second]);
 
     std::cout << "typedef " << (type1 ? type1->GetName() : "<null>") << ' ' << type2->GetName() << std::endl;
-    }
+    }*/
 
 #if defined(_DEBUG)
   for (auto& data : typedefs)
@@ -641,11 +636,6 @@ bool AApplication::ParseXML()
     {
     TType* type1 = static_cast<TType*>(elements[data.second]);
     TType* type2 = static_cast<TType*>(elements[data.first]);
-
-    if (data.first == 16)
-      {
-      std::cout << std::endl;
-      }
 
     if (type2 != nullptr && type1 != type2)
       type2->SetPointedType(type1);

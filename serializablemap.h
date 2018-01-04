@@ -59,18 +59,19 @@ class TSerializableMap
     void WriteCasesForDerived(const TClass& _class, TClassSet& classCasesWritten);
 
     template <bool DUMP_LOAD> // true for DUMP, false for LOAD
-    void WriteCall(const TClassMember& member, const std::string& prefix = "");
+    void WriteCall(const TClassMember& member, const std::string& prefix = "",
+                   const std::string& _indent = Indent);
     void WriteDumpCall(const TClassMember& member)
       { WriteCall<true>(member); }
     void WriteLoadCall(const TClassMember& member)
       { WriteCall<false>(member); }
 
     template <bool DUMP_LOAD> // true for DUMP, false for LOAD
-    void WriteInplaceStruct(const TClass& _class, const std::string& prefix);
-    void WriteDumpInplaceStruct(const TClass& _class, const std::string& prefix)
-      { WriteInplaceStruct<true>(_class, prefix); }
-    void WriteLoadInplaceStruct(const TClass& _class, const std::string& prefix)
-      { WriteInplaceStruct<false>(_class, prefix); }
+    void WriteInplaceStruct(const TClass& _class, const std::string& prefix, const std::string& indent);
+    void WriteDumpInplaceStruct(const TClass& _class, const std::string& prefix, const std::string& indent)
+      { WriteInplaceStruct<true>(_class, prefix, indent); }
+    void WriteLoadInplaceStruct(const TClass& _class, const std::string& prefix, const std::string& indent)
+      { WriteInplaceStruct<false>(_class, prefix, indent); }
 
     template <bool DUMP_LOAD> // true for DUMP, false for LOAD
     void WriteInplaceUnion(const TClass& _class, const std::string& prefix);
@@ -114,10 +115,11 @@ class TSerializableMap
     path                InjectedFunctionsFileName;
 
     TNamespaces         CurrentOpenedNamespaces;
-    std::string         Indent;
-    std::string         Indent2;
-    std::string         Indent3;
     std::string         CurrentClassName;
     std::string         CurrentClassFullName;
     std::string         CurrentTypeIdName;
+
+    static std::string  Indent;
+    static std::string  Indent2;
+    static std::string  Indent3;
   };
