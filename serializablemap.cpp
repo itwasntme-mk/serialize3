@@ -899,7 +899,7 @@ std::string TSerializableMap::GetTypeIdName(const TClass& _class)
     return "-1";
 
   std::string result(_class.GetFullName());
-  const char* illegal_chars = ":<>, *";
+  const char* illegal_chars = ":<>, *&";
 
   for (size_t pos = result.find_first_of(illegal_chars, 0); pos != -1;
        pos = result.find_first_of(illegal_chars, pos))
