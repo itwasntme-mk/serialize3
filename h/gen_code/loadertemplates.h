@@ -24,15 +24,23 @@
 //  TType expects contract of:
 //    void TType::Dump(ASerializeDumper& dumper);
 //    void TType::Load(ASerializeDumper& loader);
-template <class TType>
+template <typename TType>
 #if defined(GENERATE_ENUM_OPERATORS)
-void
+typename std::enable_if<std::is_class<TType>::value == false>::type
 #else
-typename std::enable_if<std::is_enum<TType>::value == false>::type
+typename std::enable_if<std::is_enum<TType>::value == false &&
+                        std::is_class<TType>::value == false>::type
 #endif
 operator&(ASerializeLoader& loader, TType& o)
   {
   loader.Load(o);
+  }
+
+template <typename TType>
+typename std::enable_if<std::is_class<TType>::value>::type
+operator&(ASerializeLoader& loader, TType& o)
+  {
+  o.Load(loader);
   }
 
 #if !defined(GENERATE_ENUM_OPERATORS)
@@ -155,6 +163,28 @@ void operator&(ASerializeLoader& loader, std::tuple<TTypes...>& t)
   DPOP_INDENT;
   }
 #endif // !defined(_MSC_VER)
+
+template <typename TType>
+void operator&(ASerializeLoader& loader, std::unique_ptr<TType>& o)
+  {
+  DPUSH_INDENT;
+  DLOGMSG("Load(std::unique_ptr)");
+  TType* _o = new TType;
+  loader & *_o;
+  o.reset(_o);
+  DPOP_INDENT;
+  }
+
+template <typename TType>
+void operator&(ASerializeLoader& loader, std::shared_ptr<TType>& o)
+  {
+  DPUSH_INDENT;
+  DLOGMSG("Load(std::shared_ptr)");
+  TType* _o = new TType;
+  loader & *_o;
+  o.reset(_o);
+  DPOP_INDENT;
+  }
 
 inline
 void operator&(ASerializeLoader& loader, std::string& s)
@@ -349,6 +379,10 @@ void operator & (ASerializeLoader& loader, TSerializedObjectRegistry<T>& reg)
 namespace bc = boost::container;
 namespace bu = boost::unordered;
 namespace bmi = boost::multi_index;
+
+template <class CharT, class Traits, class Allocator>
+void operator&(ASerializeLoader& loader, bc::basic_string<CharT,Traits,Allocator>& c)
+  LOAD_CNTR_SEQ_BODY("Load(string)")
 
 template <class T,class Alloc>
 void operator&(ASerializeLoader& loader, bc::vector<T,Alloc>& c)

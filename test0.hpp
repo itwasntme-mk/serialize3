@@ -1,5 +1,6 @@
 #pragma once
 
+#define OWNER_API
 #include <serialize3/h/client_code/serialize_macros.h>
 
 typedef int type1;
@@ -16,4 +17,5 @@ class TClass
     type1 m1;
     type2 m2;
     type3 m3;
+    int   m4 : 4;
   };

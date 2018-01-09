@@ -1,6 +1,7 @@
 ///\ file serializable_boost_cntrs_includes.h
 #pragma once
 
+#include <boost/container/string.hpp>
 #include <boost/container/list.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/container/deque.hpp>

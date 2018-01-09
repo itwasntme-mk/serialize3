@@ -836,8 +836,8 @@ void TSerializableMap::WriteInplaceUnion(const TClass& _class, const std::string
 
     const TType* type = member.GetType();
     assert(type != nullptr);
-    int size = std::max(type->GetSizeof(), member.IsBitfield());
-    biggest = std::max(biggest, std::make_pair(size, &member), [](const TMemberInfo& m1, const TMemberInfo& m2)
+    biggest = std::max(biggest, std::make_pair(type->GetSizeof(), &member),
+      [](const TMemberInfo& m1, const TMemberInfo& m2)
       {
       return m1.first < m2.first;
       });

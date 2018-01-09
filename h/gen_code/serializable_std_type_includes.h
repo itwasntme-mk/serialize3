@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <tuple>
+#include <memory>
 #include <string>
 #include <vector>
 #include <deque>

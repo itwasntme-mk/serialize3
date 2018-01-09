@@ -60,6 +60,16 @@ class OWNER_API_UNIXONLY TNoSerializeWrapper
       return Object;
       }
 
+    TWrappedType& operator * ()
+      {
+      return Object;
+      }
+
+    const TWrappedType& operator * () const
+      {
+      return Object;
+      }
+
     operator TWrappedType* ()
       {
       return &Object;

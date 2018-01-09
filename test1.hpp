@@ -17,6 +17,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/identity.hpp>
 
+#include <boost/container/string.hpp>
 #include <boost/container/list.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/container/deque.hpp>
@@ -134,6 +135,7 @@ class TMyClass1 : public TMyClass
 
     virtual bool test() { return false; }
 
+    boost::container::string M0;
     boost::container::list<std::string> M1;
     boost::container::vector<std::string> M2;
     boost::container::deque<std::string> M3;

@@ -60,7 +60,11 @@ LIST(APPEND HEADER_LIST
      h/storage/serializeloader.h)
      
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  LIST(APPEND FILE_LIST test1_injected.cpp test2_injected.cpp test3_injected.cpp)
+  LIST(APPEND FILE_LIST
+       test0_injected.cpp
+       test1_injected.cpp
+       test2_injected.cpp
+       test3_injected.cpp)
 endif()
 
 add_executable( serialize3 ${FILE_LIST} ${HEADER_LIST})

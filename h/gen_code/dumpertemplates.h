@@ -34,15 +34,23 @@ const TTypeId NULL_TYPE_ID = 0;
 //  TType expects contract of:
 //    void TType::Dump(ASerializeDumper& dumper);
 //    void TType::Load(ASerializeDumper& loader);
-template <class TType>
+template <typename TType>
 #if defined(GENERATE_ENUM_OPERATORS)
-void
+typename std::enable_if<std::is_class<TType>::value == false>::type
 #else
-typename std::enable_if<std::is_enum<TType>::value == false>::type
+typename std::enable_if<std::is_enum<TType>::value == false &&
+                        std::is_class<TType>::value == false>::type
 #endif
 operator&(ASerializeDumper& dumper, const TType& o)
   {
   dumper.Dump(o);
+  }
+
+template <typename TType>
+typename std::enable_if<std::is_class<TType>::value>::type
+operator&(ASerializeDumper& dumper, const TType& o)
+  {
+  o.Dump(dumper);
   }
 
 #if !defined(GENERATE_ENUM_OPERATORS)
@@ -168,6 +176,24 @@ void operator&(ASerializeDumper& dumper, const std::tuple<TTypes...>& t)
 
 #endif // !defined(_MSC_VER)
 
+template <typename TType>
+void operator&(ASerializeDumper& dumper, const std::unique_ptr<TType>& o)
+  {
+  DPUSH_INDENT;
+  DLOGMSG("Dump(std::unique_ptr)");
+  dumper & *o;
+  DPOP_INDENT;
+  }
+
+template <typename TType>
+void operator&(ASerializeDumper& dumper, const std::shared_ptr<TType>& o)
+  {
+  DPUSH_INDENT;
+  DLOGMSG("Dump(std::shared_ptr)");
+  dumper & *o;
+  DPOP_INDENT;
+  }
+
 inline
 void operator&(ASerializeDumper& dumper, const std::string& s)
   {
@@ -291,6 +317,10 @@ void operator & (ASerializeDumper& dumper, const TSerializedObjectRegistry<T>& r
 namespace bc = boost::container;
 namespace bu = boost::unordered;
 namespace bmi = boost::multi_index;
+
+template <class CharT, class Traits, class Allocator>
+void operator & (ASerializeDumper& dumper, const bc::basic_string<CharT, Traits, Allocator>& c)
+  DUMP_CNTR_BODY("Dump(boost::string)")
 
 template <class T, class Allocator>
 void operator & (ASerializeDumper& dumper, const bc::list<T, Allocator>& c)
