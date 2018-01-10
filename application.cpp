@@ -438,7 +438,7 @@ bool AApplication::ParseXML()
       return;
       }
 
-    int _sizeof = wrapper.GetSizeof();
+    int _sizeof = wrapper.GetSizeof() / CHAR_BIT;
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
@@ -465,13 +465,14 @@ bool AApplication::ParseXML()
       }
 
     int id = wrapper.GetId();
+    int _sizeof = wrapper.GetSizeof() / CHAR_BIT;
     auto bases = wrapper.GetBases();
     auto members = wrapper.GetMembers();
     int context = wrapper.GetContextId();
     assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
     const std::string& idStr = GET_ID_STR(id);
-    TClass* _class = xmlElementsFactory->CreateClass(name, idStr, tag, publicAccess,
+    TClass* _class = xmlElementsFactory->CreateClass(name, idStr, tag, publicAccess, _sizeof,
                                                      bases.size(), members.size());
 
     elements[id] = _class;
@@ -515,7 +516,7 @@ bool AApplication::ParseXML()
     bool _const = wrapper.IsConst();
     TType* _type = nullptr;
     bool publicAccess = wrapper.IsPublicAccess();
-    int _sizeof = wrapper.GetSizeof();
+    int _sizeof = wrapper.GetSizeof() / CHAR_BIT;
     const std::string& idStr = GET_ID_STR(id);
 
     if (tag != TAG_ARRAY_TYPE)
@@ -724,8 +725,7 @@ bool AApplication::ParseXML()
     {
     TSerializeMethod method = _class->IsSerializable();
 
-    if (_class->GetElemKind() == AXmlElement::TypeUnion)
-      _class->ChooseBiggestMember();
+    _class->EvaluateSizeof();
 
     if (method != TYPE_NOT_MARKED && method != TYPE_MANUAL_OBJECT_SERIALIZE)
       SerializableClasses.push_back(_class);

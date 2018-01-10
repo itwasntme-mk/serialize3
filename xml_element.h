@@ -112,7 +112,7 @@ class TType : public AXmlElement
 
   protected:
     const TType*  Type = nullptr; // could be null if fundamental type
-    int           Sizeof = 0;
+    mutable int   Sizeof = -1;
   };
 
 class TEnum final : public TType
@@ -154,8 +154,9 @@ class TClassMember final : public AXmlElement
 class TClass final : public TType
   {
   public:
-    TClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int bases, int members)
-      : TType(name, id, typeKind, publicAccess, 0)
+    TClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof,
+      int bases, int members)
+      : TType(name, id, typeKind, publicAccess, _sizeof)
       {
       Bases.reserve(bases);
       Members.reserve(members);
@@ -196,16 +197,12 @@ class TClass final : public TType
     void SetTypeId(int typeId) const { TypeId = typeId; }
     int GetTypeId() const { return TypeId; }
 
-    void ChooseBiggestMember() const;
+    /** It is in fact don't evaluate sizeof (it should be read from xml), but pick
+        the biggest one member for Unions.
+    */
+    void EvaluateSizeof() const;
     const TClassMember* GetBiggestUnionMember() const
       { return BiggestMember; }
-    int GetUnionSizeof() const
-      {
-      const TType* type = nullptr;
-      if (BiggestMember == nullptr || (type = BiggestMember->GetType()) == nullptr)
-        return 0;
-      return type->GetSizeof();
-      }
 
     bool IsDumpNeeded() const { return (SerializeMethod & TYPE_DUMP) == TYPE_DUMP;  }
     bool IsLoadNeeded() const { return (SerializeMethod & TYPE_LOAD) == TYPE_LOAD;  }
@@ -276,10 +273,10 @@ class TXmlElementsFactory final
       return result;
       }
 
-    TClass* CreateClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int bases,
-                        int members)
+    TClass* CreateClass(const std::string& name, const std::string& id, TTagType typeKind, bool publicAccess, int _sizeof,
+      int bases, int members)
       {
-      TClass* result = new TClass(name, id, typeKind, publicAccess, bases, members);
+      TClass* result = new TClass(name, id, typeKind, publicAccess, _sizeof, bases, members);
       Elements.push_front(result);
       return result;
       }
