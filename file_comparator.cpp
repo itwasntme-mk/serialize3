@@ -15,11 +15,18 @@ TFileComparator::TFileComparator(bfs::path& file, bool compare)
   : OldFile(file), NewFile(file), DoCompare(compare && bfs::exists(file))
   {
   if (DoCompare == false)
+    {
+    if (bfs::exists(OldFile))
+      bfs::remove(OldFile);
     return;
+    }
 
   NewFile = OldFile.parent_path();
   NewFile /= OldFile.stem().generic_string() + "__temporary_internal_file";
   NewFile.replace_extension(OldFile.extension());
+
+  if (bfs::exists(NewFile))
+    bfs::remove(NewFile);
   }
 
 bool TFileComparator::Compare() const

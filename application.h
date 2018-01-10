@@ -82,6 +82,8 @@ class AApplication
     void RewriteFileToLog(const path& filename);
 
   private:
+    std::string ConfigureGenericCompiler() const;
+
     std::string ConfigureClang() const;
 
     std::string ConfigureGcc() const;

@@ -155,6 +155,11 @@ bool AApplication::Initialize(const bpo::variables_map& args)
   return true;
   }
 
+std::string AApplication::ConfigureGenericCompiler() const
+  {
+  return " --preprocess -o " + PreprocessedFile.generic_string();
+  }
+
 std::string AApplication::ConfigureClang() const
   {
   return " --preprocess -o " + PreprocessedFile.generic_string();
@@ -213,50 +218,70 @@ AApplication::TPhaseResult AApplication::Preprocess(bool check_for_changes)
   LOG_INFO("PREPROCESSING ...");
 
   TFileComparator fileComparator(PreprocessedFile, check_for_changes);
-  std::string compilerName;
-  path compilerFullName(Compiler);
-  bool ignoreCompilerPath = compilerFullName.has_parent_path(); // full path to compiler passed
-  path compiler;
-  
-  compilerName = compilerFullName.stem().generic_string();
-
-  if (strcasecmp(compilerName.c_str(), "msvc") == 0 || strcasecmp(compilerName.c_str(), "cl") == 0)
-    compilerName = "cl";
-  else if (strcasecmp(compilerName.c_str(), "clang") == 0 || strcasecmp(compilerName.c_str(), "clang++") == 0)
-    compilerName = "clang";
-  else if (strcasecmp(compilerName.c_str(), "gcc") == 0 || strcasecmp(compilerName.c_str(), "gcc++") == 0 ||
-           strcasecmp(compilerName.c_str(), "c++") == 0)
-    compilerName = "gcc";
-  else
-    {
-    LOG_ERROR("Uknown compiler: " << compilerName);
-    return TPhaseResult::ERROR;
-    }
-
-  if (ignoreCompilerPath)
-    compiler = compilerName;
-  else
-    compiler = CompilerPath / compilerName;
+  path compiler(Compiler);
+  std::string compilerName(compiler.stem().generic_string());
 
 #if defined(_WIN32)
-  std::string command('\"' + compiler.string() + '\"');
+  std::transform(compilerName.begin(), compilerName.end(), compilerName.begin(), [] (unsigned char c)
+    {
+    return std::tolower(c);
+    });
+#endif
+
+  enum { GENERIC, GCC, CLANG, MSVC };
+  int compilerType = GENERIC;
+
+  if (compilerName.find("gcc") == 0 || compilerName.find("g++") == 0)
+    compilerType = GCC;
+  else if (compilerName.find("clang") == 0)
+    compilerType = CLANG;
+  else if (compilerName.find("cl") == 0 || compilerName.find("msvc") == 0)
+    {
+    compilerType = MSVC;
+    compiler = compiler.parent_path() / "cl";
+    }
+  else // GENERIC
+    {
+    LOG_WARNING("Uknown compiler: " << compilerName);
+    }
+
+  path compilerFullName;
+
+  if (compiler.has_parent_path())
+    compilerFullName = compiler;
+  else
+    compilerFullName = CompilerPath / compiler;
+
+#if defined(_WIN32)
+  std::string command('\"' + compilerFullName.string() + '\"');
 #else
-  std::string command(compiler.string());
+  std::string command(compilerFullName.string());
 #endif
 
   command += ' ' + CompilerOptions;
 
-  if (compilerName == "cl")
-    command += ConfigureMsvc();
-  else if (compilerName == "clang")
-    command += ConfigureClang();
-  else // gcc
+  switch (compilerType)
+  {
+  case GENERIC:
+    command += ConfigureGenericCompiler();
+    break;
+  case GCC:
     command += ConfigureGcc();
+    break;
+  case CLANG:
+    command += ConfigureClang();
+    break;
+  case MSVC:
+    command += ConfigureMsvc();
+    break;
+  default: assert(false && "Uknown compiler type!");
+    break;
+  }
+
+  command += ' ' + PrepareIncludes();
 
   for (auto& input : InputFiles)
     command += ' ' + input.generic_string();
-
-  command += ' ' + PrepareIncludes();
 
   LOG_VERBOSE("Run cmd: " << command);
 
