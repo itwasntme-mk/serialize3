@@ -196,6 +196,17 @@ class TClass final : public TType
     void SetTypeId(int typeId) const { TypeId = typeId; }
     int GetTypeId() const { return TypeId; }
 
+    void ChooseBiggestMember() const;
+    const TClassMember* GetBiggestUnionMember() const
+      { return BiggestMember; }
+    int GetUnionSizeof() const
+      {
+      const TType* type = nullptr;
+      if (BiggestMember == nullptr || (type = BiggestMember->GetType()) == nullptr)
+        return 0;
+      return type->GetSizeof();
+      }
+
     bool IsDumpNeeded() const { return (SerializeMethod & TYPE_DUMP) == TYPE_DUMP;  }
     bool IsLoadNeeded() const { return (SerializeMethod & TYPE_LOAD) == TYPE_LOAD;  }
     bool IsDumpPointerNeeded() const { return (SerializeMethod & TYPE_DUMPPOINTER) == TYPE_DUMPPOINTER; }
@@ -244,6 +255,9 @@ class TClass final : public TType
     std::vector<TClass*>        Derived;
     std::vector<TClassMember*>  Members;
     TSerializeMethod            SerializeMethod = TYPE_NOT_MARKED;
+    /// Valid only for Union. Member with biggest sizeof.
+    mutable const TClassMember* BiggestMember = nullptr;
+    /// Set and used with TSerializableMap.
     mutable int                 TypeId = -1;
     bool                        Abstract = false;
     bool                        VirtuallyDerived = false;

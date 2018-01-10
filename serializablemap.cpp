@@ -821,30 +821,9 @@ void TSerializableMap::WriteInplaceUnion(const TClass& _class, const std::string
   if (_class.IsSerializable() == TYPE_DO_NOT_SERIALIZE)
     return;
 
-  typedef std::pair<int, const TClassMember*> TMemberInfo;
-  std::pair<int, const TClassMember*> biggest {0, nullptr};
-
-  _class.ForEachMember([this, &biggest](const TClassMember& member)
-    {
-    if (member.IsPublicAccess() == false)
-      {
-      LOG_ERROR("cannot generate code for non-public union member: "
-                << (member.GetName().empty() ? member.GetId() : member.GetFullName()));
-      ++Errors;
-      return;
-      }
-
-    const TType* type = member.GetType();
-    assert(type != nullptr);
-    biggest = std::max(biggest, std::make_pair(type->GetSizeof(), &member),
-      [](const TMemberInfo& m1, const TMemberInfo& m2)
-      {
-      return m1.first < m2.first;
-      });
-    });
-
-  if (biggest.second)
-    WriteCall<DUMP_LOAD>(*biggest.second);
+  const TClassMember* biggestMember = _class.GetBiggestUnionMember();
+  if (biggestMember)
+    WriteCall<DUMP_LOAD>(*biggestMember);
   }
 
 #if defined(GENERATE_ENUM_OPERATORS)

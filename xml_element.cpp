@@ -120,6 +120,42 @@ TMethodType TClass::GetSerializableMarker() const
 bool TClass::IsTemplate() const
   { return Name.find('<') != std::string::npos; }
 
+void TClass::ChooseBiggestMember() const
+  {
+  if (BiggestMember != nullptr)
+    return;
+
+  std::pair<int, const TClassMember*> biggest { 0, nullptr };
+  ForEachMember([&biggest](const TClassMember& member)
+    {
+    const TType* type = member.GetType();
+    int size = 1;
+
+    while (type)
+      {
+      switch (type->GetTypeKind())
+        {
+        case TypeArray:
+          size *= type->GetSizeof();
+          type = static_cast<const TArrayType*>(type)->GetElemType();
+          break;
+        case TypeUnion:
+          size *= static_cast<const TClass*>(type)->GetUnionSizeof();
+          type = nullptr;
+          break;
+        default:
+          size *= type->GetSizeof();
+          type = nullptr;
+          break;
+        }
+      }
+
+    biggest = std::max(biggest, std::make_pair(size, &member));
+    });
+
+  BiggestMember = biggest.second;
+  }
+
 
 TXmlElementsFactory* TXmlElementsFactory::GetInstance()
   {

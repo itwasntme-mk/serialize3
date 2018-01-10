@@ -728,6 +728,9 @@ bool AApplication::ParseXML()
     {
     TSerializeMethod method = _class->IsSerializable();
 
+    if (_class->GetElemKind() == AXmlElement::TypeUnion)
+      _class->ChooseBiggestMember();
+
     if (method != TYPE_NOT_MARKED && method != TYPE_MANUAL_OBJECT_SERIALIZE)
       SerializableClasses.push_back(_class);
     }
