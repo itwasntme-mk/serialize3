@@ -21,16 +21,12 @@
 #include <set>
 #include <map>
 
-#if defined(_WIN32)
-  #define strcasecmp _strcmpi
-#endif
 
-
-#define GET_ID_STR(id) bpt::AXmlItemWrapper::GetIdStr(id)
+#define GET_ID_STR(id) AXmlItemWrapper::GetIdStr(id)
 
 namespace bpo = boost::program_options;
 namespace bfs = boost::filesystem;
-namespace bpt = boost::property_tree;
+using namespace boost::property_tree;
 
 #if defined(USE_SORTED_CLASSES)
 inline void AApplication::OrderClass(const TClass& _class)
@@ -338,13 +334,13 @@ AApplication::TPhaseResult AApplication::GenerateXML(bool check_for_changes)
 
 bool AApplication::ParseXML()
   {
-  bpt::ptree pt;
+  ptree pt;
 
   LOG_INFO("READ XML FILE ...");
 
   try
     {
-    bpt::read_xml(XmlFile.generic_string(), pt);
+    read_xml(XmlFile.generic_string(), pt);
     }
   catch (const boost::exception& ex)
     {
@@ -357,7 +353,7 @@ bool AApplication::ParseXML()
   LOG_INFO("... DONE")
   LOG_INFO("ANALYZE XML LIST ...");
   const char* xmlRootName = GetXmlRootName();
-  const bpt::ptree* content = nullptr;
+  const ptree* content = nullptr;
 
   try
     {
@@ -386,14 +382,14 @@ bool AApplication::ParseXML()
   std::unique_ptr<AXmlElement*[]> elements(new AXmlElement*[xmlSize]);
   memset(elements.get(), 0, xmlSize * sizeof(AXmlElement*));
 
-  bpt::AXmlItemWrapper::ReserveIdPool(xmlSize);
+  AXmlItemWrapper::ReserveIdPool(xmlSize);
 
-  typedef std::function<void(const bpt::ptree::value_type&, TTagType)> THandleXmlItem;
+  typedef std::function<void(const ptree::value_type&, TTagType)> THandleXmlItem;
   typedef std::map<TTagType, THandleXmlItem, std::str_less> THandleXmlItemIndex;
 
-  THandleXmlItem handle_field = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_field = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TFieldWrapper wrapper(item);
+    TFieldWrapper wrapper(item);
     auto const& name = wrapper.GetName();
     int id = wrapper.GetId();
     int typeId = wrapper.GetTypeId();
@@ -410,9 +406,9 @@ bool AApplication::ParseXML()
     elements[id] = member;
     };
 
-  THandleXmlItem handle_namespace = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_namespace = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TNamespaceWrapper wrapper(item);
+    TNamespaceWrapper wrapper(item);
     auto const& name = wrapper.GetName();
 
     if (name == "::")
@@ -428,9 +424,9 @@ bool AApplication::ParseXML()
     elements[id] = _namespace;
     };
 
-  THandleXmlItem handle_enum_type = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_enum_type = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TEnumWrapper wrapper(item);
+    TEnumWrapper wrapper(item);
     auto const& name = wrapper.GetName();
     int id = wrapper.GetId();
 
@@ -457,9 +453,9 @@ bool AApplication::ParseXML()
     Enums.push_back(_enum);
     };
 
-  THandleXmlItem handle_class = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_class = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TClassWrapper wrapper(item);
+    TClassWrapper wrapper(item);
     auto const& name = wrapper.GetName();
 
     if (wrapper.IsIncomplete())
@@ -497,7 +493,7 @@ bool AApplication::ParseXML()
         {
         if (attrI->first == TAG_BASE)
           {
-          bpt::TBaseClassWrapper wrapper(*attrI);
+          TBaseClassWrapper wrapper(*attrI);
 
           if (wrapper.IsVirtuallyDerived())
             {
@@ -509,9 +505,9 @@ bool AApplication::ParseXML()
       }
     };
 
-  THandleXmlItem handle_type = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_type = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TTypeWrapper wrapper(item);
+    TTypeWrapper wrapper(item);
 
     auto const& name = wrapper.GetName();
     int id = wrapper.GetId();
@@ -546,9 +542,9 @@ bool AApplication::ParseXML()
       typedefs.emplace(id, typeId);
     };
 
-  THandleXmlItem handle_method = [&] (const bpt::ptree::value_type& item, TTagType tag)
+  THandleXmlItem handle_method = [&] (const ptree::value_type& item, TTagType tag)
     {
-    bpt::TMethodWrapper wrapper(item);
+    TMethodWrapper wrapper(item);
     TMethodType methodType = wrapper.IsSerializeMethod();
 
     if (methodType)

@@ -49,13 +49,13 @@ template <typename TType>
 typename std::enable_if<std::is_enum<TType>::value>::type
 operator&(ASerializeLoader& loader, TType& o)
   {
-  static_assert(sizeof(TType) <= 64, "Too big size of enum type");
+  static_assert(sizeof(TType) <= 8, "Too big size of enum type");
   switch (sizeof(TType))
     {
-    case 8:  loader.Load((unsigned char&)o); break;
-    case 16: loader.Load((unsigned short&)o); break;
-    case 32: loader.Load((unsigned int&)o); break;
-    case 64: loader.Load((unsigned long long&)o); break;
+    case 1:  loader.Load((unsigned char&)o); break;
+    case 2: loader.Load((unsigned short&)o); break;
+    case 4: loader.Load((unsigned int&)o); break;
+    case 8: loader.Load((unsigned long long&)o); break;
     default:;
     }
   }
