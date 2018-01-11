@@ -63,7 +63,7 @@ int AApplication::Run(const bpo::variables_map& args)
 
   if (result == TPhaseResult::ERROR)
     return -2;
-  if (result == TPhaseResult::NO_CHANGES)
+  if (result == TPhaseResult::NO_CHANGES && bfs::exists(PreprocessedFile))
     {
     LOG_INFO("FINISHED (no changes after preprocessing)");
     return 0;
@@ -72,7 +72,7 @@ int AApplication::Run(const bpo::variables_map& args)
   result = GenerateXML(stop_when_no_changes == "xml");    
   if (result == TPhaseResult::ERROR)
     return -3;
-  if (result == TPhaseResult::NO_CHANGES)
+  if (result == TPhaseResult::NO_CHANGES && bfs::exists(XmlFile))
     {
     LOG_INFO("FINISHED (no changes after xml generation)");
     return 0;
@@ -112,8 +112,18 @@ bool AApplication::Initialize(const bpo::variables_map& args)
   CompilerIncludes = args["compiler-includes"].as<std::string>();
   InputFiles = args["input"].as<std::vector<path>>();
 
-  if (WorkingDir.empty() == false)
+  if (bfs::exists(WorkingDir) == false)
     {
+    LOG_ERROR("directory " << WorkingDir << " not exists");
+    return false;
+    }
+
+  if (WorkingDir.empty())
+    PreprocessedFile = InputFiles[0];
+  else
+    {
+    PreprocessedFile = WorkingDir / InputFiles[0].filename();
+
     for (auto& file : InputFiles)
       {
       if (file.has_parent_path() == false)
@@ -130,12 +140,7 @@ bool AApplication::Initialize(const bpo::variables_map& args)
       }
     }
 
-  PreprocessedFile = InputFiles[0];
-
-  if (PreprocessedFile.has_parent_path() == false)
-    PreprocessedFile = WorkingDir / PreprocessedFile;
-
-  if (XmlCreatorOptions.find("c++") != 0)
+  if (XmlCreatorOptions.find("c++") != std::string::npos)
     PreprocessedFile.replace_extension(".ii");
   else
     PreprocessedFile.replace_extension(".i");
