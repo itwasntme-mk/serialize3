@@ -70,11 +70,10 @@ endif()
 add_executable( serialize3 ${FILE_LIST} ${HEADER_LIST})
 target_link_libraries( serialize3 ${Boost_LIBRARIES} )
 #include_directories(../)
-target_include_directories( serialize3 PUBLIC
-                            "${CMAKE_CURRENT_SOURCE_DIR}/../"
-                            "${Boost_INCLUDE_DIR}" )
+target_include_directories( serialize3 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../"
+                                       PRIVATE "${Boost_INCLUDE_DIR}" )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -g -DSERIALIZABLE_BOOST_CONTAINERS")
+set(CMAKE_CXX_FLAGS "-std=c++14 -g -DSERIALIZABLE_BOOST_CONTAINERS")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
