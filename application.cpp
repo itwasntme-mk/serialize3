@@ -445,11 +445,12 @@ bool AApplication::ParseXML()
 
     int _sizeof = wrapper.GetSizeof() / CHAR_BIT;
     int context = wrapper.GetContextId();
-    assert(context >= 0);
+    //assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
     const std::string& idStr = GET_ID_STR(id);
     TEnum* _enum = xmlElementsFactory->CreateEnum(name, idStr, tag, publicAccess, _sizeof);
-    _enum->SetParent(elements[context]);
+    if (context >= 0)
+      _enum->SetParent(elements[context]);
 
     //if (wrapper.IsPublicAccess() == false)
       //LOG_WARNING("Enum with non-public access (id: " << wrapper.GetIdStr() << ")");
@@ -474,7 +475,7 @@ bool AApplication::ParseXML()
     auto bases = wrapper.GetBases();
     auto members = wrapper.GetMembers();
     int context = wrapper.GetContextId();
-    assert(context >= 0);
+    //assert(context >= 0);
     bool publicAccess = wrapper.IsPublicAccess();
     const std::string& idStr = GET_ID_STR(id);
     TClass* _class = xmlElementsFactory->CreateClass(name, idStr, tag, publicAccess, _sizeof,
@@ -482,7 +483,8 @@ bool AApplication::ParseXML()
 
     elements[id] = _class;
     classes.push_back(_class);
-    _class->SetParent(elements[context]);
+    if (context >= 0)
+      _class->SetParent(elements[context]);
 
     if (wrapper.IsAbstract())
       _class->SetAbstract();
